@@ -45,6 +45,11 @@ class DebtRepositoryImpl @Inject constructor(
         dao.observeContactBalances().map { rows -> rows.map { it.toModel() } }
 
     override suspend fun get(id: Long): DebtWithRemaining? = dao.getWithRemaining(id)?.toModel()
+    override fun observe(id: Long): Flow<DebtWithRemaining?> = dao.observeWithRemaining(id).map { it?.toModel() }
+    override suspend fun getContact(id: Long): Contact? = dao.getContact(id)?.toModel()
+    override fun observeContact(id: Long): Flow<Contact?> = dao.observeContact(id).map { it?.toModel() }
+    override suspend fun deleteDebt(id: Long) = dao.deleteDebt(id)
+    override suspend fun deleteContact(id: Long): Boolean = dao.deleteContactIfUnused(id) > 0
 
     override suspend fun createDebt(debt: Debt, accountId: Long?): Long {
         require(debt.currencyCode.length == 3) { "Код валюты — три буквы" }

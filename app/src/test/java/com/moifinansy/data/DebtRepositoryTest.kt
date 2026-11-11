@@ -144,3 +144,34 @@ class DebtRepositoryTest : DbTest() {
         assertEquals(500L, debts.get(id)!!.remaining)
     }
 }
+
+class DebtStage5Test : DbTest() {
+    @org.junit.Test
+    fun `total, initial account and deletion restore balances`() = kotlinx.coroutines.test.runTest {
+        val card = account("Карта", initial = 20_000)
+        val c = debts.createContact(com.moifinansy.domain.model.Contact(name = "Нурлан"))
+        val id = debts.createDebt(
+            com.moifinansy.domain.model.Debt(
+                contactId = c, direction = com.moifinansy.domain.model.DebtDirection.OWED_TO_ME,
+                principal = 10_000, currencyCode = "KGS", startDate = now,
+            ),
+            card,
+        )
+        debts.addPayment(id, com.moifinansy.domain.model.DebtPaymentKind.INCREASE, 4_000, card, now)
+        debts.addPayment(id, com.moifinansy.domain.model.DebtPaymentKind.REPAY, 5_000, card, now)
+
+        val d = debts.get(id)!!
+        org.junit.Assert.assertEquals(14_000L, d.total)
+        org.junit.Assert.assertEquals(9_000L, d.remaining)
+        org.junit.Assert.assertEquals(5_000L, d.repaid)
+        org.junit.Assert.assertEquals(card, d.initialAccountId)
+        org.junit.Assert.assertEquals(11_000L, accounts.balanceOf(card))
+
+        // Контакт с долгами не удаляется.
+        org.junit.Assert.assertFalse(debts.deleteContact(c))
+        debts.deleteDebt(id)
+        org.junit.Assert.assertNull(debts.get(id))
+        org.junit.Assert.assertEquals(20_000L, accounts.balanceOf(card))
+        org.junit.Assert.assertTrue(debts.deleteContact(c))
+    }
+}

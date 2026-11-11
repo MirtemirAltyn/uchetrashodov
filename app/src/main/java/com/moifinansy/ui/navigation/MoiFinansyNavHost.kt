@@ -29,6 +29,9 @@ import com.moifinansy.ui.accounts.AccountEditScreen
 import com.moifinansy.ui.accounts.AccountsScreen
 import com.moifinansy.ui.categories.CategoriesScreen
 import com.moifinansy.ui.categories.CategoryEditScreen
+import com.moifinansy.ui.debts.ContactScreen
+import com.moifinansy.ui.debts.DebtDetailScreen
+import com.moifinansy.ui.debts.DebtEditScreen
 import com.moifinansy.ui.debts.DebtsScreen
 import com.moifinansy.ui.home.HomeScreen
 import com.moifinansy.ui.more.MoreScreen
@@ -109,7 +112,7 @@ fun MoiFinansyNavHost() {
             if (current?.hasFab == true) {
                 FloatingActionButton(onClick = {
                     when (current) {
-                        TopLevelDestination.DEBTS -> Unit // экран нового долга — этап 5
+                        TopLevelDestination.DEBTS -> navController.navigate(Routes.debtEdit())
                         else -> navController.navigate(Routes.operationEdit())
                     }
                 }) {
@@ -155,7 +158,35 @@ fun MoiFinansyNavHost() {
                     },
                 )
             }
-            composable(TopLevelDestination.DEBTS.route) { DebtsScreen() }
+            composable(TopLevelDestination.DEBTS.route) {
+                DebtsScreen(
+                    onOpenDebt = ::openDebt,
+                    onOpenContact = { navController.navigate(Routes.contact(it)) },
+                    onAdd = { navController.navigate(Routes.debtEdit()) },
+                )
+            }
+            composable(Routes.DEBT, arguments = listOf(idArg)) {
+                DebtDetailScreen(onBack = navController::popBackStack, onOpenContact = { navController.navigate(Routes.contact(it)) })
+            }
+            composable(
+                Routes.DEBT_EDIT,
+                arguments = listOf(navArgument("contactId") { type = NavType.LongType; defaultValue = Routes.NONE }),
+            ) {
+                DebtEditScreen(
+                    onBack = navController::popBackStack,
+                    onSaved = { id ->
+                        navController.popBackStack()
+                        openDebt(id)
+                    },
+                )
+            }
+            composable(Routes.CONTACT, arguments = listOf(idArg)) {
+                ContactScreen(
+                    onBack = navController::popBackStack,
+                    onOpenDebt = ::openDebt,
+                    onAddDebt = { navController.navigate(Routes.debtEdit(it)) },
+                )
+            }
             composable(TopLevelDestination.REPORTS.route) { ReportsScreen() }
             composable(TopLevelDestination.MORE.route) {
                 MoreScreen(

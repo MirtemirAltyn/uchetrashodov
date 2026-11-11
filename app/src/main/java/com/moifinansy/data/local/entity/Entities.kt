@@ -230,6 +230,10 @@ data class AccountWithBalanceRow(
 data class DebtWithRemainingRow(
     @Embedded val debt: DebtEntity,
     val remaining: Long,
+    /** Сколько всего дали/взяли: первоначальная сумма + дозаймы. */
+    val totalAmount: Long,
+    /** Счёт первого движения — по умолчанию для погашений. */
+    val initialAccountId: Long?,
 )
 
 data class DebtTotalsRow(val iOwe: Long, val owedToMe: Long)

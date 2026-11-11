@@ -85,6 +85,13 @@ interface DebtRepository {
     fun observeTotals(currencyCode: String): Flow<DebtTotals>
     fun observeContactBalances(): Flow<List<ContactBalance>>
     suspend fun get(id: Long): DebtWithRemaining?
+    fun observe(id: Long): Flow<DebtWithRemaining?>
+    suspend fun getContact(id: Long): Contact?
+    fun observeContact(id: Long): Flow<Contact?>
+    /** Удаляет долг вместе с движениями и связанными операциями по счетам. */
+    suspend fun deleteDebt(id: Long)
+    /** Удаляет контакт, если у него нет долгов. true — удалён. */
+    suspend fun deleteContact(id: Long): Boolean
 
     /** Создаёт долг и первое движение INITIAL. [accountId] обязателен, если долг влияет на счета. */
     suspend fun createDebt(debt: Debt, accountId: Long?): Long

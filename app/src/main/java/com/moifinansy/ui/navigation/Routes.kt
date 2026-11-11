@@ -12,7 +12,9 @@ object Routes {
     const val OPERATION_EDIT = "operation_edit?id={id}&type={type}&copyFrom={copyFrom}"
     const val DEBT = "debt/{id}"
     const val DEBT_EDIT = "debt_edit?contactId={contactId}"
-    const val DEBT_EDIT_NEW = "debt_edit"
+    const val CONTACT = "contact/{id}"
+    fun contact(id: Long) = "contact/$id"
+    fun debtEdit(contactId: Long? = null) = "debt_edit?contactId=${contactId ?: NONE}"
     const val CATEGORY_EDIT = "category_edit?id={id}&kind={kind}&parentId={parentId}"
 
     const val NONE = -1L

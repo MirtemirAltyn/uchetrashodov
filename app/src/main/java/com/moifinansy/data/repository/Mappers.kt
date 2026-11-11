@@ -54,7 +54,7 @@ fun Contact.toEntity(createdAt: Long, updatedAt: Long) = ContactEntity(id, name,
 fun DebtEntity.toModel() = Debt(id, contactId, direction, principal, currencyCode, startDate, dueDate, note, status, affectsAccounts)
 fun Debt.toEntity(createdAt: Long, updatedAt: Long) =
     DebtEntity(id, contactId, direction, principal, currencyCode, startDate, dueDate, note, status, affectsAccounts, createdAt, updatedAt)
-fun DebtWithRemainingRow.toModel() = DebtWithRemaining(debt.toModel(), remaining)
+fun DebtWithRemainingRow.toModel() = DebtWithRemaining(debt.toModel(), remaining, totalAmount, initialAccountId)
 fun DebtPaymentEntity.toModel() = DebtPayment(id, debtId, kind, amount, accountId, date, transactionId, note)
 fun ContactBalanceRow.toModel() = ContactBalance(contactId, currencyCode, saldo)
 

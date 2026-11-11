@@ -45,11 +45,27 @@ abstract class DebtDao {
     @Query("UPDATE debts SET status = :status, updatedAt = :now WHERE id = :id")
     protected abstract suspend fun setStatus(id: Long, status: DebtStatus, now: Long)
 
-    @Query("SELECT d.*, $REMAINING_SQL AS remaining FROM debts d ORDER BY d.status, d.dueDate IS NULL, d.dueDate, d.id")
+    @Query("SELECT d.*, $REMAINING_SQL AS remaining, $TOTAL_SQL AS totalAmount, $INITIAL_ACCOUNT_SQL AS initialAccountId FROM debts d ORDER BY d.status, d.dueDate IS NULL, d.dueDate, d.id")
     abstract fun observeWithRemaining(): Flow<List<DebtWithRemainingRow>>
 
-    @Query("SELECT d.*, $REMAINING_SQL AS remaining FROM debts d WHERE d.id = :id")
+    @Query("SELECT d.*, $REMAINING_SQL AS remaining, $TOTAL_SQL AS totalAmount, $INITIAL_ACCOUNT_SQL AS initialAccountId FROM debts d WHERE d.id = :id")
     abstract suspend fun getWithRemaining(id: Long): DebtWithRemainingRow?
+
+    @Query("SELECT d.*, $REMAINING_SQL AS remaining, $TOTAL_SQL AS totalAmount, $INITIAL_ACCOUNT_SQL AS initialAccountId FROM debts d WHERE d.id = :id")
+    abstract fun observeWithRemaining(id: Long): Flow<DebtWithRemainingRow?>
+
+    /** Удаляет долг вместе с его движениями и операциями по счетам (каскад). */
+    @Query("DELETE FROM debts WHERE id = :id")
+    abstract suspend fun deleteDebt(id: Long)
+
+    @Query("SELECT * FROM contacts WHERE id = :id")
+    abstract suspend fun getContact(id: Long): ContactEntity?
+
+    @Query("SELECT * FROM contacts WHERE id = :id")
+    abstract fun observeContact(id: Long): Flow<ContactEntity?>
+
+    @Query("DELETE FROM contacts WHERE id = :id AND NOT EXISTS (SELECT 1 FROM debts WHERE contactId = :id)")
+    abstract suspend fun deleteContactIfUnused(id: Long): Int
 
     @Query("SELECT COALESCE(SUM(CASE WHEN kind IN ('INITIAL', 'INCREASE') THEN amount ELSE -amount END), 0) FROM debt_payments WHERE debtId = :debtId")
     abstract suspend fun remaining(debtId: Long): Long
@@ -168,5 +184,12 @@ abstract class DebtDao {
         const val REMAINING_SQL =
             "(SELECT COALESCE(SUM(CASE WHEN p.kind IN ('INITIAL', 'INCREASE') THEN p.amount ELSE -p.amount END), 0)" +
                 " FROM debt_payments p WHERE p.debtId = d.id)"
+
+        const val TOTAL_SQL =
+            "(SELECT COALESCE(SUM(CASE WHEN p.kind IN ('INITIAL', 'INCREASE') THEN p.amount ELSE 0 END), 0)" +
+                " FROM debt_payments p WHERE p.debtId = d.id)"
+
+        const val INITIAL_ACCOUNT_SQL =
+            "(SELECT p.accountId FROM debt_payments p WHERE p.debtId = d.id AND p.kind = 'INITIAL' LIMIT 1)"
     }
 }

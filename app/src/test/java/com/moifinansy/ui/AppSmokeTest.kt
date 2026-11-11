@@ -166,5 +166,31 @@ class AppSmokeTest {
         compose.onNode(hasScrollAction()).performScrollToNode(hasText("Добавить подкатегорию"))
         waitForText("Общественный транспорт")
         shot("11_category_subcategories")
+
+        // Долги: новый долг «Мне должны» 14 000, частичное погашение 4 000.
+        compose.activityRule.scenario.onActivity {
+            it.onBackPressedDispatcher.onBackPressed()
+            it.onBackPressedDispatcher.onBackPressed()
+        }
+        waitForText("Долги")
+        click("Долги")
+        waitForText("Записать долг")
+        click("Записать долг")
+        waitForText("Новый долг")
+        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Имя", substring = true), 10_000)
+        compose.onNode(hasSetTextAction() and hasText("Имя", substring = true)).performTextReplacement("Азамат Токтогулов")
+        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("14000")
+        shot("12_debt_edit")
+        compose.onNodeWithText("Сохранить").performScrollTo().performClick()
+        waitForText("Осталось".let { "История движений" })
+        click("Погасить")
+        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("4000")
+        click("Провести")
+        waitForText("Возвращено " + MoneyFormat.formatNumber(400_000) + "\u00A0сом из " + MoneyFormat.formatNumber(1_400_000) + "\u00A0сом")
+        shot("13_debt_detail")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Сальдо по долгам")
+        waitForText(MoneyFormat.format(1_000_000, "KGS", signed = true))
+        shot("14_debts")
     }
 }

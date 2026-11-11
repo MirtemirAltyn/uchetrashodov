@@ -74,7 +74,16 @@ data class Debt(
     val affectsAccounts: Boolean = true,
 )
 
-data class DebtWithRemaining(val debt: Debt, val remaining: Long)
+data class DebtWithRemaining(
+    val debt: Debt,
+    val remaining: Long,
+    /** Первоначальная сумма + дозаймы. */
+    val total: Long = remaining,
+    val initialAccountId: Long? = null,
+) {
+    /** Сколько уже вернули или простили. */
+    val repaid: Long get() = total - remaining
+}
 
 data class DebtPayment(
     val id: Long = 0,
