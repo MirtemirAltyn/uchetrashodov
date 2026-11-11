@@ -272,4 +272,64 @@
     <string name="reports_subcategories">По подкатегориям</string>
     <string name="reports_operations">Операции</string>
     <string name="reports_category_months">Сумма по месяцам</string>
+
+    <!-- Уведомления -->
+    <string name="notif_channel">Напоминания</string>
+    <string name="notif_channel_desc">Сроки долгов, бюджеты и регулярные платежи</string>
+    <string name="notif_debt_today">Сегодня срок долга: %1$s</string>
+    <string name="notif_debt_soon">Через %1$d дн. срок долга: %2$s</string>
+    <string name="notif_debt_overdue">Просрочен долг: %1$s</string>
+    <string name="notif_debt_text_owed">%1$s должен вам %2$s</string>
+    <string name="notif_debt_text_owe">Вы должны %1$s: %2$s</string>
+    <string name="notif_budget_warning">Бюджет «%1$s» почти исчерпан</string>
+    <string name="notif_budget_exceeded">Бюджет «%1$s» превышен</string>
+    <string name="notif_budget_text">Потрачено %1$s из %2$s</string>
+    <string name="notif_recurring">Подтвердите платёж</string>
+    <string name="notif_recurring_text">%1$s — откройте «Регулярные платежи», чтобы провести</string>
+    <string name="budget_all_expenses">Все расходы</string>
+
+    <!-- Бюджеты -->
+    <string name="more_budgets">Бюджеты</string>
+    <string name="more_budgets_hint">Лимиты расходов на месяц</string>
+    <string name="budgets_title">Бюджеты на %1$s</string>
+    <string name="budgets_empty">Бюджетов нет. Задайте лимит на месяц для категории или на все расходы.</string>
+    <string name="budgets_add">Добавить бюджет</string>
+    <string name="budget_spent">Потрачено %1$s из %2$s</string>
+    <string name="budget_left">Осталось %1$s</string>
+    <string name="budget_over">Перерасход %1$s</string>
+    <string name="budget_new">Новый бюджет</string>
+    <string name="budget_edit">Бюджет</string>
+    <string name="budget_limit">Лимит на месяц</string>
+    <string name="budget_category">Категория</string>
+
+    <!-- Регулярные платежи -->
+    <string name="more_recurring">Регулярные платежи</string>
+    <string name="more_recurring_hint">Аренда, зарплата, подписки</string>
+    <string name="recurring_empty">Регулярных платежей нет</string>
+    <string name="recurring_add">Добавить платёж</string>
+    <string name="recurring_new">Новый регулярный платёж</string>
+    <string name="recurring_edit">Регулярный платёж</string>
+    <string name="recurring_next">Следующий: %1$s</string>
+    <string name="recurring_due">Пора провести: %1$s</string>
+    <string name="recurring_post">Провести</string>
+    <string name="recurring_skip">Пропустить</string>
+    <string name="recurring_mode_auto">Создавать автоматически</string>
+    <string name="recurring_mode_remind">Напомнить и подтвердить</string>
+    <string name="recurring_every">Повторять</string>
+    <string name="recurring_interval">Каждые</string>
+    <string name="recurring_freq_day">дн.</string>
+    <string name="recurring_freq_week">нед.</string>
+    <string name="recurring_freq_month">мес.</string>
+    <string name="recurring_freq_year">г.</string>
+    <string name="recurring_every_text">каждые %1$d %2$s</string>
+    <string name="recurring_first_date">Дата первого платежа</string>
+    <string name="recurring_end_date">Закончить</string>
+    <string name="recurring_end_never">Никогда</string>
+    <string name="recurring_auto">Авто</string>
+    <string name="recurring_remind">С подтверждением</string>
+
+    <!-- Настройки: напоминания -->
+    <string name="settings_debt_days">Напоминать о сроке долга</string>
+    <string name="settings_debt_days_0">В день срока</string>
+    <string name="settings_debt_days_n">За %1$d дн. и в день срока</string>
 </resources>

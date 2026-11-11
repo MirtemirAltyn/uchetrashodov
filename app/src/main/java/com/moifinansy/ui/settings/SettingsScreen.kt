@@ -42,6 +42,22 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 checked = state.showAccountTypes,
                 onChange = viewModel::setShowAccountTypes,
             )
+            com.moifinansy.core.ui.SectionTitle(
+                stringResource(R.string.settings_debt_days),
+                Modifier.padding(horizontal = Spacing.screenHorizontal),
+            )
+            androidx.compose.foundation.layout.FlowRow(
+                Modifier.padding(horizontal = Spacing.screenHorizontal),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.grid),
+            ) {
+                listOf(0, 1, 3, 7).forEach { days ->
+                    androidx.compose.material3.FilterChip(
+                        selected = state.debtReminderDays == days,
+                        onClick = { viewModel.setDebtReminderDays(days) },
+                        label = { Text(if (days == 0) stringResource(R.string.settings_debt_days_0) else stringResource(R.string.settings_debt_days_n, days)) },
+                    )
+                }
+            }
         }
     }
 }

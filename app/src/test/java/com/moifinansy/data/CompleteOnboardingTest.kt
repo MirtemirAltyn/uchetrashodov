@@ -26,6 +26,16 @@ class FakeSettings : SettingsRepository {
     override suspend fun setFirstDayOfWeek(day: java.time.DayOfWeek) {
         firstDay.value = day
     }
+    val debtDays = MutableStateFlow(1)
+    override val debtReminderDays: Flow<Int> = debtDays
+    override suspend fun setDebtReminderDays(days: Int) {
+        debtDays.value = days
+    }
+    val notified = mutableSetOf<String>()
+    override suspend fun wasNotified(key: String) = key in notified
+    override suspend fun markNotified(key: String) {
+        notified += key
+    }
     val lastAccount = MutableStateFlow<Long?>(null)
     override val lastAccountId: Flow<Long?> = lastAccount
     override suspend fun setLastAccountId(id: Long) {

@@ -65,6 +65,17 @@ abstract class TransactionDao {
     @Query("DELETE FROM transaction_tags WHERE transactionId = :transactionId")
     protected abstract suspend fun clearTags(transactionId: Long)
 
+    @Query("UPDATE recurring_rules SET nextDate = :nextDate, updatedAt = :now WHERE id = :ruleId")
+    protected abstract suspend fun setRuleNextDate(ruleId: Long, nextDate: Long, now: Long)
+
+    /** Платёж по регулярному правилу: операция и новая дата правила — одной транзакцией БД. */
+    @Transaction
+    open suspend fun insertForRule(transaction: TransactionEntity, ruleId: Long, nextDate: Long, now: Long): Long {
+        val id = insert(transaction)
+        setRuleNextDate(ruleId, nextDate, now)
+        return id
+    }
+
     /** Операция и её теги пишутся одной транзакцией БД. */
     @Transaction
     open suspend fun upsertWithTags(transaction: TransactionEntity, tagIds: List<Long>, now: Long): Long {

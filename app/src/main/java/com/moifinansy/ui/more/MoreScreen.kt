@@ -23,6 +23,8 @@ fun MoreScreen(
     onAccounts: () -> Unit,
     onCategories: () -> Unit,
     onSettings: () -> Unit,
+    onBudgets: () -> Unit,
+    onRecurring: () -> Unit,
     viewModel: MoreViewModel = hiltViewModel(),
 ) {
     val baseCurrency by viewModel.baseCurrency.collectAsStateWithLifecycle()
@@ -51,6 +53,8 @@ fun MoreScreen(
             color = accent,
             onClick = onCategories,
         )
+        MenuRow(stringResource(R.string.more_budgets), stringResource(R.string.more_budgets_hint), icon = "savings", color = accent, onClick = onBudgets)
+        MenuRow(stringResource(R.string.more_recurring), stringResource(R.string.more_recurring_hint), icon = "subscriptions", color = accent, onClick = onRecurring)
         MenuRow(
             stringResource(R.string.settings_title),
             stringResource(R.string.settings_hint),

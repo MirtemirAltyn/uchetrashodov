@@ -53,8 +53,38 @@ class BudgetRepositoryImpl @Inject constructor(
 
 class RecurringRepositoryImpl @Inject constructor(
     private val dao: RecurringRuleDao,
+    private val transactionDao: com.moifinansy.data.local.dao.TransactionDao,
     private val clock: Clock,
 ) : RecurringRepository {
+    override suspend fun get(id: Long): RecurringRule? = dao.getById(id)?.toModel()
+
+    override suspend fun post(ruleId: Long, date: Long): Long {
+        val rule = requireNotNull(dao.getById(ruleId)) { "Правило $ruleId не найдено" }
+        val now = clock.millis()
+        val next = com.moifinansy.domain.recurring.RecurrenceMath.next(date, rule.frequency, rule.interval, clock.zone)
+        val t = com.moifinansy.domain.model.Transaction(
+            type = rule.type,
+            amount = rule.amount,
+            accountId = rule.accountId,
+            categoryId = rule.categoryId,
+            toAccountId = rule.toAccountId,
+            toAmount = rule.toAmount,
+            fee = rule.fee,
+            date = date,
+            note = rule.note,
+            recurringId = rule.id,
+        )
+        // Проведённая дата не раньше текущей «следующей» — сдвигаем правило за неё.
+        val newNext = if (date >= rule.nextDate) next else rule.nextDate
+        return transactionDao.insertForRule(t.toEntity(now, now), ruleId, newNext, now)
+    }
+
+    override suspend fun skip(ruleId: Long) {
+        val rule = dao.getById(ruleId) ?: return
+        val next = com.moifinansy.domain.recurring.RecurrenceMath.next(rule.nextDate, rule.frequency, rule.interval, clock.zone)
+        dao.update(rule.copy(nextDate = next, updatedAt = clock.millis()))
+    }
+
     override fun observeAll(): Flow<List<RecurringRule>> = dao.observeAll().map { rows -> rows.map { it.toModel() } }
 
     override suspend fun dueBy(date: Long): List<RecurringRule> = dao.dueBy(date).map { it.toModel() }

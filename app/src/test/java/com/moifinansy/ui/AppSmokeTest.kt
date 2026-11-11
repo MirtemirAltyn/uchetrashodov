@@ -155,6 +155,18 @@ class AppSmokeTest {
         click("Типы счетов")
         shot("07b_settings")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+
+        // Бюджет на все расходы 100 сом при расходе 155 — перерасход.
+        waitForText("Бюджеты")
+        click("Бюджеты")
+        compose.onNode(hasContentDescription("Добавить бюджет")).performClick()
+        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Лимит на месяц", substring = true), 10_000)
+        compose.onNode(hasSetTextAction() and hasText("Лимит на месяц", substring = true)).performTextReplacement("100")
+        click("Сохранить")
+        waitForText("155 %")
+        waitForText("Перерасход " + MoneyFormat.format(5_500, "KGS"))
+        shot("07c_budgets")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
         waitForText("Счета")
         click("Счета")
         waitForText("Карта Мбанк")

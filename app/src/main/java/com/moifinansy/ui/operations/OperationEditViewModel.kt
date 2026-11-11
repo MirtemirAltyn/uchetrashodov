@@ -82,6 +82,7 @@ class OperationEditViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val undo: UndoDeleteHolder,
     private val clock: Clock,
+    private val checks: com.moifinansy.work.BackgroundChecks,
 ) : ViewModel() {
     private val editId: Long? = savedStateHandle.get<Long>("id")?.takeIf { it > 0 }
     private val copyFromId: Long? = savedStateHandle.get<Long>("copyFrom")?.takeIf { it > 0 }
@@ -224,6 +225,7 @@ class OperationEditViewModel @Inject constructor(
         viewModelScope.launch {
             transactions.save(transaction, s.tagIds.toList())
             settings.setLastAccountId(s.accountId)
+            if (s.type == TransactionType.EXPENSE) checks.requestCheck()
             _state.update { it.copy(done = true) }
         }
     }

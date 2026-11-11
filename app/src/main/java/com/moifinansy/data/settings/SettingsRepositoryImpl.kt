@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.moifinansy.domain.settings.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -36,6 +37,19 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[FIRST_DAY] = day.name }
     }
 
+    override val debtReminderDays: Flow<Int> = dataStore.data.map { it[DEBT_DAYS] ?: 1 }.distinctUntilChanged()
+
+    override suspend fun setDebtReminderDays(days: Int) {
+        dataStore.edit { it[DEBT_DAYS] = days }
+    }
+
+    override suspend fun wasNotified(key: String): Boolean = key in (dataStore.data.first()[NOTIFIED] ?: emptySet())
+
+    override suspend fun markNotified(key: String) {
+        // Храним последние ключи, чтобы набор не рос бесконечно.
+        dataStore.edit { it[NOTIFIED] = ((it[NOTIFIED] ?: emptySet()) + key).toList().takeLast(500).toSet() }
+    }
+
     override val lastAccountId: Flow<Long?> = dataStore.data.map { it[LAST_ACCOUNT_ID] }.distinctUntilChanged()
 
     override suspend fun setLastAccountId(id: Long) {
@@ -56,5 +70,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val SHOW_ACCOUNT_TYPES = booleanPreferencesKey("show_account_types")
         val LAST_ACCOUNT_ID = longPreferencesKey("last_account_id")
         val FIRST_DAY = stringPreferencesKey("first_day_of_week")
+        val DEBT_DAYS = androidx.datastore.preferences.core.intPreferencesKey("debt_reminder_days")
+        val NOTIFIED = androidx.datastore.preferences.core.stringSetPreferencesKey("notified_keys")
     }
 }

@@ -18,6 +18,14 @@ interface SettingsRepository {
     val firstDayOfWeek: Flow<java.time.DayOfWeek>
     suspend fun setFirstDayOfWeek(day: java.time.DayOfWeek)
 
+    /** За сколько дней до срока долга напоминать (0 — только в день срока). */
+    val debtReminderDays: Flow<Int>
+    suspend fun setDebtReminderDays(days: Int)
+
+    /** Ключи уже показанных напоминаний (чтобы не повторять). */
+    suspend fun wasNotified(key: String): Boolean
+    suspend fun markNotified(key: String)
+
     /** Счёт последней операции — подставляется в новую операцию. */
     val lastAccountId: Flow<Long?>
     suspend fun setLastAccountId(id: Long)

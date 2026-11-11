@@ -116,6 +116,11 @@ interface BudgetRepository {
 interface RecurringRepository {
     fun observeAll(): Flow<List<RecurringRule>>
     suspend fun dueBy(date: Long): List<RecurringRule>
+    suspend fun get(id: Long): RecurringRule?
+    /** Проводит платёж правила на дату [date]: операция + сдвиг следующей даты, одной транзакцией БД. */
+    suspend fun post(ruleId: Long, date: Long): Long
+    /** Пропустить платёж: только сдвинуть следующую дату. */
+    suspend fun skip(ruleId: Long)
     suspend fun save(rule: RecurringRule): Long
     suspend fun delete(id: Long)
 }

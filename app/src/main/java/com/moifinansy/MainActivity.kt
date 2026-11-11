@@ -33,6 +33,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** Android 13+: разрешение на уведомления (сроки долгов, бюджеты, регулярные платежи). */
+@Composable
+private fun NotificationPermissionRequest() {
+    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) return
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (!granted) launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+    }
+}
+
 @Composable
 private fun AppRoot(viewModel: MainViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -44,7 +59,10 @@ private fun AppRoot(viewModel: MainViewModel = hiltViewModel()) {
         when (state) {
             AppState.LOADING -> Unit
             AppState.ONBOARDING -> OnboardingScreen()
-            AppState.READY -> MoiFinansyNavHost()
+            AppState.READY -> {
+                NotificationPermissionRequest()
+                MoiFinansyNavHost()
+            }
         }
     }
 }

@@ -49,6 +49,10 @@ import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.moifinansy.ui.reports.CategoryReportScreen
+import com.moifinansy.ui.budgets.BudgetEditScreen
+import com.moifinansy.ui.budgets.BudgetsScreen
+import com.moifinansy.ui.recurring.RecurringEditScreen
+import com.moifinansy.ui.recurring.RecurringScreen
 import com.moifinansy.ui.reports.ReportsScreen
 import com.moifinansy.ui.settings.SettingsScreen
 
@@ -209,8 +213,14 @@ fun MoiFinansyNavHost() {
                     onAccounts = { navController.navigate(Routes.ACCOUNTS) },
                     onCategories = { navController.navigate(Routes.CATEGORIES) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },
+                    onBudgets = { navController.navigate(Routes.BUDGETS) },
+                    onRecurring = { navController.navigate(Routes.RECURRING) },
                 )
             }
+            composable(Routes.BUDGETS) { BudgetsScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(Routes.budgetEdit(it)) }) }
+            composable(Routes.BUDGET_EDIT, arguments = listOf(idArg)) { BudgetEditScreen(onDone = navController::popBackStack) }
+            composable(Routes.RECURRING) { RecurringScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(Routes.recurringEdit(it)) }) }
+            composable(Routes.RECURRING_EDIT, arguments = listOf(idArg)) { RecurringEditScreen(onDone = navController::popBackStack) }
             composable(Routes.SETTINGS) { SettingsScreen(onBack = navController::popBackStack) }
 
             composable(Routes.ACCOUNTS) {
