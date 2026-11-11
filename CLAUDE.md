@@ -23,7 +23,11 @@ Gradle Kotlin DSL, версии в `gradle/libs.versions.toml`. minSdk 26, targe
 - Бизнес-логика — в use cases/ViewModel, не в Composable-функциях.
 - Все строки интерфейса — в `res/values/strings.xml` (русский в v1).
 - Цвета и размеры — из темы (`MaterialTheme`, `LocalFinanceColors`, `Spacing`), без хардкода в экранах.
-- Схема Room экспортируется (`exportSchema = true`), изменения — через миграции с тестами.
+- Схема Room экспортируется (`exportSchema = true`, файлы в `app/schemas/`), изменения — через миграции с тестами.
+- Знак суммы операции: EXPENSE/INCOME/TRANSFER — `amount` > 0, направление задаёт тип;
+  ADJUSTMENT и DEBT — `amount` со знаком (влияние на баланс счёта). Формула баланса — `AccountDao.BALANCE_SQL`.
+- Движения по долгам создаются только через `DebtRepository`/`DebtDao` (движение + операция по счёту + статус — одна транзакция БД).
+- В отчёты по категориям входят только EXPENSE и INCOME; комиссия перевода — расход в служебной категории «Комиссии» (`systemKey = COMMISSIONS`).
 
 ## Команды
 ```
@@ -31,3 +35,8 @@ Gradle Kotlin DSL, версии в `gradle/libs.versions.toml`. minSdk 26, targe
 ./gradlew test            # unit-тесты
 ```
 Нужен Android SDK: путь в `local.properties` (`sdk.dir=...`) или переменная `ANDROID_HOME`.
+
+## Тесты
+- Unit-тесты на JVM; тесты Room — через Robolectric на базе в памяти, наследуются от `app/src/test/.../data/DbTest.kt`.
+- Robolectric работает офлайн: его Android-рантайм (`android-all-instrumented`) скачивает Gradle как зависимость
+  `robolectricRuntime`. Версия рантайма в `libs.versions.toml` должна подходить к версии Robolectric.
