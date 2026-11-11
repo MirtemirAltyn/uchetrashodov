@@ -19,7 +19,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,7 +72,14 @@ fun GradientHeader(
         androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodySmall, color = onGradient.copy(alpha = 0.85f))
-                Text(amount, style = MaterialTheme.typography.displaySmall, color = onGradient)
+                androidx.compose.animation.AnimatedContent(
+                    targetState = amount,
+                    transitionSpec = {
+                        (androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it / 3 })
+                            .togetherWith(androidx.compose.animation.fadeOut())
+                    },
+                    label = "amount",
+                ) { text -> Text(text, style = MaterialTheme.typography.displaySmall, color = onGradient) }
             }
             action?.invoke()
         }
@@ -187,6 +196,17 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+/** Плавное заполнение прогресс-бара. */
+@Composable
+fun animatedProgress(target: Float): Float {
+    val value by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = target.coerceIn(0f, 1f),
+        animationSpec = androidx.compose.animation.core.tween(600),
+        label = "progress",
+    )
+    return value
 }
 
 /** Белая карточка-раздел со скруглением 20 dp и заголовком. */

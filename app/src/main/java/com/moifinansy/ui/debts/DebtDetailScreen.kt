@@ -102,8 +102,9 @@ fun DebtDetailScreen(
                 )
             }
             item(key = "progress") {
+                val p = com.moifinansy.core.ui.animatedProgress(if (debt.total > 0) debt.repaid.toFloat() / debt.total else 0f)
                 LinearProgressIndicator(
-                    progress = { if (debt.total > 0) debt.repaid.toFloat() / debt.total else 0f },
+                    progress = { p },
                     color = if (d.direction == DebtDirection.OWED_TO_ME) colors.income else colors.expense,
                     strokeCap = StrokeCap.Round,
                     drawStopIndicator = {},

@@ -79,7 +79,13 @@ fun OperationEditScreen(
     viewModel: OperationEditViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(state.done) { if (state.done) onDone() }
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    LaunchedEffect(state.done) {
+        if (state.done) {
+            haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
+            onDone()
+        }
+    }
     var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(

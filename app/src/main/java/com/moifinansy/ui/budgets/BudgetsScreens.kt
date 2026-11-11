@@ -82,8 +82,9 @@ fun BudgetCard(status: BudgetStatus, currency: String, onClick: () -> Unit) {
                 Text(status.category?.name ?: stringResource(R.string.budget_all_expenses), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Text("${status.percent} %", style = MaterialTheme.typography.titleMedium, color = color)
             }
+            val p = com.moifinansy.core.ui.animatedProgress(status.percent / 100f)
             LinearProgressIndicator(
-                progress = { (status.percent / 100f).coerceIn(0f, 1f) },
+                progress = { p },
                 color = color,
                 strokeCap = StrokeCap.Round,
                 drawStopIndicator = {},

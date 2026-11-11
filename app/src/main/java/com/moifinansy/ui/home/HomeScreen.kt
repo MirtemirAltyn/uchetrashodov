@@ -122,8 +122,9 @@ fun HomeScreen(
                                 Text(top.category.name, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(MoneyFormat.format(top.total, state.baseCurrency), style = MaterialTheme.typography.titleMedium)
                             }
+                            val p = com.moifinansy.core.ui.animatedProgress(top.sharePercent / 100f)
                             LinearProgressIndicator(
-                                progress = { top.sharePercent / 100f },
+                                progress = { p },
                                 color = Color(top.category.color),
                                 trackColor = Color(top.category.color).copy(alpha = 0.15f),
                                 strokeCap = StrokeCap.Round,

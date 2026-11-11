@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кошелёк с монетой на градиентном фоне. Безопасная зона адаптивной иконки — центральные 66 dp из 108. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,40h34a4,4 0 0,1 4,4v4h-12a8,8 0 0,0 0,16h12v4a4,4 0 0,1 -4,4h-34a4,4 0 0,1 -4,-4v-24a4,4 0 0,1 4,-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,36h26a2,2 0 0,1 2,2v0h-30a2,2 0 0,1 2,-2z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62,51h14a2,2 0 0,1 2,2v6a2,2 0 0,1 -2,2h-14a5,5 0 0,1 0,-10z" />
+    <path
+        android:fillColor="#5B5BD6"
+        android:pathData="M63,56m-2.5,0a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0" />
+</vector>

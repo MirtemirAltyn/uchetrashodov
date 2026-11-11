@@ -57,10 +57,19 @@ class AppSmokeTest {
         compose.onNode(field).performTextReplacement(text)
     }
 
+    /** Вкладка нижней панели (у неё роль Tab — не путать с одноимёнными заголовками). */
+    private fun tab(label: String) = compose.onNode(
+        hasText(label) and androidx.compose.ui.test.SemanticsMatcher.expectValue(
+            androidx.compose.ui.semantics.SemanticsProperties.Role,
+            androidx.compose.ui.semantics.Role.Tab,
+        ),
+    ).performClick()
+
     private fun click(text: String) = compose.onNodeWithText(text).performClick()
 
     @Test
     fun onboardingAccountsAndCategories() {
+        org.robolectric.shadows.ShadowLog.stream = System.out
         // Онбординг: валюта по умолчанию — сом.
         waitForText("Добро пожаловать")
         shot("01_onboarding_currency")
@@ -236,5 +245,22 @@ class AppSmokeTest {
         waitForText("Сальдо по долгам")
         waitForText(MoneyFormat.format(1_000_000, "KGS", signed = true))
         shot("14_debts")
+
+        // Тёмная тема.
+        click("Ещё")
+        waitForText("Настройки")
+        click("Настройки")
+        waitForText("Тёмная")
+        click("Тёмная")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Главная")
+        click("Главная")
+        waitForText("Общий баланс")
+        // Главная обновилась после долга: «Наличные» 10 000 − 14 000 + 4 000 = 0, всего 5 000,50; «Мне должны» 10 000.
+        waitForText("Долг")
+        shot("15_home_dark")
+        tab("Долги")
+        waitForText("Сальдо по долгам")
+        shot("16_debts_dark")
     }
 }

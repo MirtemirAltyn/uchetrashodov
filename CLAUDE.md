@@ -30,17 +30,24 @@ Gradle Kotlin DSL, версии в `gradle/libs.versions.toml`. minSdk 26, targe
 - Движения по долгам создаются только через `DebtRepository`/`DebtDao` (движение + операция по счёту + статус — одна транзакция БД).
 - В отчёты по категориям входят только EXPENSE и INCOME; комиссия перевода — расход в служебной категории «Комиссии» (`systemKey = COMMISSIONS`).
 
+- Суммы в отчётах, общем балансе, бюджетах и итогах долгов пересчитываются в основную валюту в SQL
+  (`TransactionDao.SRC`/`RATE`, `AccountDao.observeTotal`, `DebtDao.DEBT_RATE`); курс — `rateToBaseMicros` (× 1 000 000), без курса сумма = 0.
+- Фоновые задачи — `work/DailyWorker` (Hilt); в Robolectric не запускаются (`Build.FINGERPRINT == "robolectric"`).
+- PIN хранится только как SHA-256 с солью (`domain/security/PinHasher`), блокировка — `ui/lock/LockManager`.
+
 ## Команды
 ```
 ./gradlew assembleDebug   # сборка debug APK → app/build/outputs/apk/debug/app-debug.apk
 ./gradlew test            # unit-тесты
 ```
 Нужен Android SDK: путь в `local.properties` (`sdk.dir=...`) или переменная `ANDROID_HOME`.
+Релиз: `./gradlew assembleRelease bundleRelease` (R8 включён); подпись — из `keystore.properties` (не в git), см. README.
 
 ## Тесты
 - Unit-тесты на JVM; тесты Room — через Robolectric на базе в памяти, наследуются от `app/src/test/.../data/DbTest.kt`.
 - `ui/AppSmokeTest` — сквозной прогон настоящего `MainActivity` (онбординг → счета → категории) через Compose UI test.
   Скриншоты экранов: `./gradlew testDebugUnitTest -Pscreenshots` → `app/build/screenshots/`.
+- В сквозном тесте: ввод — через `input(label, text)` (ждёт загрузки поля), вкладки — через `tab(name)` (роль Tab).
 - Поля ввода внутри `AlertDialog` в Robolectric «не дают уснуть» тестовым часам — ввод суммы делаем на экране, не в диалоге.
 - Robolectric работает офлайн: его Android-рантайм (`android-all-instrumented`) скачивает Gradle как зависимость
   `robolectricRuntime`. Версия рантайма в `libs.versions.toml` должна подходить к версии Robolectric.
