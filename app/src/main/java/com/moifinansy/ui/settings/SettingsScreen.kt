@@ -56,26 +56,10 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val message by viewModel.message.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val snackbar = remember { SnackbarHostState() }
-    LaunchedEffect(message) {
-        message?.let {
-            snackbar.showSnackbar(it)
-            viewModel.messageShown()
-        }
-    }
-    var exportPeriod by remember { mutableStateOf(ExportPeriod.MONTH) }
-    var confirmRestore by remember { mutableStateOf<android.net.Uri?>(null) }
-    var confirmDemoDelete by remember { mutableStateOf(false) }
-    val today = LocalDate.now()
-    val csvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri -> uri?.let { viewModel.exportCsv(it, exportPeriod) } }
-    val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri -> uri?.let(viewModel::backup) }
-    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> confirmRestore = uri }
 
     Scaffold(
         topBar = { BackTopBar(stringResource(R.string.settings_title), onBack) },
-        snackbarHost = { SnackbarHost(snackbar) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
@@ -105,6 +89,12 @@ fun SettingsScreen(
             SwitchRow(stringResource(R.string.settings_pin), stringResource(R.string.settings_pin_hint), state.security.pinEnabled) { on ->
                 if (on) onSetPin() else viewModel.disablePin()
             }
+            SwitchRow(
+                stringResource(R.string.settings_block_screenshots),
+                stringResource(R.string.settings_block_screenshots_hint),
+                state.blockScreenshots,
+                viewModel::setBlockScreenshots,
+            )
             if (state.security.pinEnabled) {
                 val bioAvailable = canUseBiometric(context)
                 SwitchRow(
@@ -120,21 +110,6 @@ fun SettingsScreen(
                         })
                     }
                 }
-            }
-
-            Section(stringResource(R.string.settings_section_data))
-            Label(stringResource(R.string.settings_export_period))
-            Chips {
-                listOf(ExportPeriod.MONTH to R.string.period_month, ExportPeriod.YEAR to R.string.period_year, ExportPeriod.ALL to R.string.ops_all_time)
-                    .forEach { (p, label) -> FilterChip(exportPeriod == p, { exportPeriod = p }, label = { Text(stringResource(label)) }) }
-            }
-            LinkRow(stringResource(R.string.settings_export_csv), null) { csvLauncher.launch("moi-finansy-$today.csv") }
-            LinkRow(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_hint)) { backupLauncher.launch("moi-finansy-backup-$today.json") }
-            LinkRow(stringResource(R.string.settings_restore), null) { restoreLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
-            if (state.demoCount > 0) {
-                LinkRow(stringResource(R.string.demo_delete), stringResource(R.string.demo_delete_hint)) { confirmDemoDelete = true }
-            } else if (state.userTransactions == 0) {
-                LinkRow(stringResource(R.string.demo_fill), stringResource(R.string.demo_fill_hint), viewModel::fillDemo)
             }
 
             Section(stringResource(R.string.settings_section_debts))
@@ -163,36 +138,6 @@ fun SettingsScreen(
                 onChange = viewModel::setShowAccountTypes,
             )
         }
-    }
-
-    if (confirmDemoDelete) {
-        AlertDialog(
-            onDismissRequest = { confirmDemoDelete = false },
-            title = { Text(stringResource(R.string.demo_delete_title)) },
-            text = { Text(stringResource(R.string.demo_delete_text)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmDemoDelete = false
-                    viewModel.deleteDemo()
-                }) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { confirmDemoDelete = false }) { Text(stringResource(R.string.action_cancel)) } },
-        )
-    }
-
-    confirmRestore?.let { uri ->
-        AlertDialog(
-            onDismissRequest = { confirmRestore = null },
-            title = { Text(stringResource(R.string.settings_restore_title)) },
-            text = { Text(stringResource(R.string.settings_restore_text)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmRestore = null
-                    viewModel.restore(uri)
-                }) { Text(stringResource(R.string.settings_restore_confirm), color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { confirmRestore = null }) { Text(stringResource(R.string.action_cancel)) } },
-        )
     }
 }
 

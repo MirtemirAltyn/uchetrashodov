@@ -84,10 +84,11 @@ class AppSmokeTest {
         // Демо-данные: заполнить, посмотреть, удалить (пока своих операций нет).
         waitForText("Общий баланс")
         tab("Ещё")
-        click("Настройки")
+        click("Данные")
         waitForText("Заполнить демо-данными за год")
-        compose.onNodeWithText("Заполнить демо-данными за год").performScrollTo().performClick()
+        click("Заполнить демо-данными за год")
         waitForText("Удалить демо-данные")
+        shot("d0_data_screen")
         back()
         tab("Главная")
         waitForText("Карта Мбанк")
@@ -108,9 +109,9 @@ class AppSmokeTest {
         waitForText("Похоже на регулярный платёж")
         shot("d5_recurring_demo")
         back()
-        click("Настройки")
+        click("Данные")
         waitForText("Удалить демо-данные")
-        compose.onNodeWithText("Удалить демо-данные").performScrollTo().performClick()
+        click("Удалить демо-данные")
         waitForText("Удалить демо-данные?")
         compose.onNode(hasText("Удалить") and hasClickAction()).performClick()
         waitForText("Заполнить демо-данными за год")
@@ -216,6 +217,10 @@ class AppSmokeTest {
         waitForText("Повторите PIN")
         "1234".forEach { click(it.toString()) }
         waitForText("Отпечаток или лицо")
+        // С PIN-кодом скриншоты по-прежнему разрешены: запрет — отдельный переключатель.
+        compose.activityRule.scenario.onActivity {
+            org.junit.Assert.assertEquals(0, it.window.attributes.flags and android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        }
         shot("07b_settings")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
 
@@ -313,5 +318,20 @@ class AppSmokeTest {
         tab("Долги")
         waitForText("Сальдо по долгам")
         shot("16_debts_dark")
+
+        // Начать с чистого листа → снова первый экран → посмотреть с демо-данными.
+        tab("Ещё")
+        click("Данные")
+        compose.onNodeWithText("Начать с чистого листа").performScrollTo().performClick()
+        waitForText("Сначала сохранить копию?")
+        click("Продолжить без копии")
+        waitForText("Удалить все данные?")
+        shot("17_reset_confirm")
+        click("Удалить всё")
+        waitForText("Добро пожаловать")
+        click("Посмотреть с демо-данными")
+        waitForText("Общий баланс")
+        waitForText("Карта Мбанк")
+        shot("18_demo_from_onboarding")
     }
 }

@@ -11,6 +11,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val BUDGETS = "budgets"
     const val RATES = "rates"
+    const val DATA = "data"
     const val PIN_SETUP = "pin_setup"
     const val BUDGET_EDIT = "budget_edit?id={id}"
     const val RECURRING = "recurring"

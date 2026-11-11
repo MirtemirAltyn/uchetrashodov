@@ -22,6 +22,13 @@ interface SettingsRepository {
     val debtReminderDays: Flow<Int>
     suspend fun setDebtReminderDays(days: Int)
 
+    /** Запрещать скриншоты и показ содержимого в списке недавних приложений. */
+    val blockScreenshots: Flow<Boolean>
+    suspend fun setBlockScreenshots(value: Boolean)
+
+    /** «Начать с чистого листа»: сбрасывает все настройки, кроме темы. */
+    suspend fun resetAll()
+
     /** Новые долги по умолчанию влияют на баланс счетов. */
     val debtsAffectBalance: Flow<Boolean>
     suspend fun setDebtsAffectBalance(value: Boolean)

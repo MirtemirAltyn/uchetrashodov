@@ -50,10 +50,10 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         ProcessLifecycleOwner.get().lifecycle.addObserver(processObserver)
-        // С PIN-кодом запрещаем скриншоты и показ содержимого в списке недавних приложений.
+        // Запрет скриншотов и показа содержимого в «недавних» — отдельная настройка (по умолчанию выключена).
         lifecycleScope.launch {
-            settings.security.collect { s ->
-                if (s.pinEnabled) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE) else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            settings.blockScreenshots.collect { block ->
+                if (block) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE) else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
         }
         setContent { AppRoot() }

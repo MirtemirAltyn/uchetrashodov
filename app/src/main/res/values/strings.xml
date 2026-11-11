@@ -361,7 +361,7 @@
     <string name="settings_rates_missing">Нет курса: %1$s</string>
     <string name="settings_section_security">Защита</string>
     <string name="settings_pin">Вход по PIN-коду</string>
-    <string name="settings_pin_hint">Скрывает приложение от посторонних; скриншоты экрана запрещены</string>
+    <string name="settings_pin_hint">Спрашивать PIN при входе в приложение</string>
     <string name="settings_biometric">Отпечаток или лицо</string>
     <string name="settings_biometric_unavailable">На телефоне не настроена биометрия</string>
     <string name="settings_lock_after">Спрашивать PIN после фона</string>
@@ -425,4 +425,30 @@
     <string name="demo_delete_text">Удалятся все выдуманные счета, операции, долги, бюджеты и регулярные платежи. Ваши записи останутся; демо-счёт, на который вы записали свои операции, тоже останется.</string>
     <string name="demo_filled">Демо-данные добавлены</string>
     <string name="demo_deleted">Демо-данные удалены</string>
+
+    <string name="settings_block_screenshots">Запрещать скриншоты</string>
+    <string name="settings_block_screenshots_hint">Экран нельзя сфотографировать, а в списке недавних приложений вместо содержимого — пустое окно</string>
+
+    <!-- Экран «Данные» -->
+    <string name="more_data">Данные</string>
+    <string name="more_data_hint">Копия, экспорт, демо-данные, начать заново</string>
+    <string name="data_section_export">Экспорт</string>
+    <string name="data_section_backup">Резервная копия</string>
+    <string name="data_section_demo">Демо-данные</string>
+    <string name="data_section_reset">Начать заново</string>
+    <string name="demo_fill_any_hint">Выдуманные счета, операции за год, долги и бюджеты — посмотреть, как выглядят отчёты</string>
+    <string name="demo_add_title">Добавить демо-данные?</string>
+    <string name="demo_add_text">Демо добавится к вашим записям. Потом можно удалить только демо — ваши записи останутся.</string>
+    <string name="demo_add_confirm">Добавить</string>
+    <string name="reset_action">Начать с чистого листа</string>
+    <string name="reset_action_hint">Удалить все счета, операции, долги и настройки и начать как после установки</string>
+    <string name="reset_backup_title">Сначала сохранить копию?</string>
+    <string name="reset_backup_text">Сейчас удалятся все данные приложения. Резервная копия поможет вернуть их, если передумаете.</string>
+    <string name="reset_backup_save">Сохранить копию</string>
+    <string name="reset_backup_skip">Продолжить без копии</string>
+    <string name="reset_confirm_title">Удалить все данные?</string>
+    <string name="reset_confirm_text">Удалятся счета, операции, долги, бюджеты, регулярные платежи, теги и курсы; настройки сбросятся (кроме темы), категории вернутся к стандартным. Отменить нельзя.</string>
+    <string name="reset_confirm">Удалить всё</string>
+    <string name="onboarding_demo">Посмотреть с демо-данными</string>
+    <string name="onboarding_demo_hint">Приложение заполнится выдуманными данными за год; удалить их можно в «Ещё → Данные»</string>
 </resources>

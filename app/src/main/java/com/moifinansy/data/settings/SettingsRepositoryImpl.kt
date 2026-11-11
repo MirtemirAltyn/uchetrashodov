@@ -43,6 +43,20 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[DEBT_DAYS] = days }
     }
 
+    override val blockScreenshots: Flow<Boolean> = dataStore.data.map { it[BLOCK_SCREENSHOTS] ?: false }.distinctUntilChanged()
+
+    override suspend fun setBlockScreenshots(value: Boolean) {
+        dataStore.edit { it[BLOCK_SCREENSHOTS] = value }
+    }
+
+    override suspend fun resetAll() {
+        dataStore.edit { prefs ->
+            val theme = prefs[THEME]
+            prefs.clear()
+            theme?.let { prefs[THEME] = it }
+        }
+    }
+
     override val debtsAffectBalance: Flow<Boolean> = dataStore.data.map { it[DEBTS_AFFECT] ?: true }.distinctUntilChanged()
 
     override suspend fun setDebtsAffectBalance(value: Boolean) {
@@ -122,6 +136,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val BIOMETRIC = booleanPreferencesKey("biometric")
         val LOCK_AFTER = androidx.datastore.preferences.core.intPreferencesKey("lock_after_minutes")
         val DEBT_DAYS = androidx.datastore.preferences.core.intPreferencesKey("debt_reminder_days")
+        val BLOCK_SCREENSHOTS = booleanPreferencesKey("block_screenshots")
         val DEBTS_AFFECT = booleanPreferencesKey("debts_affect_balance")
         val NOTIFIED = androidx.datastore.preferences.core.stringSetPreferencesKey("notified_keys")
     }

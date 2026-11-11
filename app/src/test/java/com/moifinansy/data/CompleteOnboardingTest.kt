@@ -31,6 +31,20 @@ class FakeSettings : SettingsRepository {
     override suspend fun setDebtReminderDays(days: Int) {
         debtDays.value = days
     }
+    val block = MutableStateFlow(false)
+    override val blockScreenshots: Flow<Boolean> = block
+    override suspend fun setBlockScreenshots(value: Boolean) {
+        block.value = value
+    }
+    override suspend fun resetAll() {
+        currency.value = null
+        completed.value = false
+        showTypes.value = true
+        sec.value = com.moifinansy.domain.settings.SecuritySettings()
+        hide.value = false
+        lastAccount.value = null
+        notified.clear()
+    }
     val debtsAffect = MutableStateFlow(true)
     override val debtsAffectBalance: Flow<Boolean> = debtsAffect
     override suspend fun setDebtsAffectBalance(value: Boolean) {

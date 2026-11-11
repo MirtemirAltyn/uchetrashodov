@@ -30,9 +30,16 @@ data class OnboardingState(
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val completeOnboarding: CompleteOnboardingUseCase,
+    private val settings: com.moifinansy.domain.settings.SettingsRepository,
+    private val demo: com.moifinansy.data.demo.DemoDataGenerator,
 ) : ViewModel() {
     private val _state = MutableStateFlow(OnboardingState())
     val state: StateFlow<OnboardingState> = _state.asStateFlow()
+
+    /** Онбординг всегда начинается с первого шага (в том числе после «начать с чистого листа»). */
+    fun restart() {
+        _state.value = OnboardingState()
+    }
 
     /** Подставляет название счёта по умолчанию, если пользователь ещё ничего не ввёл. */
     fun suggestName(name: String) = _state.update { if (it.accountName.isEmpty()) it.copy(accountName = name) else it }
@@ -43,6 +50,20 @@ class OnboardingViewModel @Inject constructor(
     fun setName(name: String) = _state.update { it.copy(accountName = name, nameError = false) }
     fun setType(type: AccountType) = _state.update { it.copy(accountType = type) }
     fun setBalance(text: String) = _state.update { it.copy(balanceText = text, balanceError = false) }
+
+    /** Пропустить настройку и посмотреть приложение с демо-данными в выбранной валюте. */
+    fun startWithDemo() {
+        if (_state.value.saving) return
+        _state.update { it.copy(saving = true) }
+        viewModelScope.launch {
+            try {
+                settings.setBaseCurrency(_state.value.currencyCode)
+                demo.generate()
+            } finally {
+                _state.update { it.copy(saving = false) }
+            }
+        }
+    }
 
     /** Сохраняет валюту и первый счёт. Экран сменится сам, когда онбординг отметится пройденным. */
     fun finish() {

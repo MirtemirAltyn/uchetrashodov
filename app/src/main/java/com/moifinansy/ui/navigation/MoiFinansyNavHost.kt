@@ -215,8 +215,10 @@ fun MoiFinansyNavHost() {
                     onSettings = { navController.navigate(Routes.SETTINGS) },
                     onBudgets = { navController.navigate(Routes.BUDGETS) },
                     onRecurring = { navController.navigate(Routes.RECURRING) },
+                    onData = { navController.navigate(Routes.DATA) },
                 )
             }
+            composable(Routes.DATA) { com.moifinansy.ui.data.DataScreen(onBack = navController::popBackStack) }
             composable(Routes.BUDGETS) { BudgetsScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(Routes.budgetEdit(it)) }) }
             composable(Routes.BUDGET_EDIT, arguments = listOf(idArg)) { BudgetEditScreen(onDone = navController::popBackStack) }
             composable(Routes.RECURRING) { RecurringScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(Routes.recurringEdit(it)) }) }

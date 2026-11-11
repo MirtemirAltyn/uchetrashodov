@@ -40,7 +40,10 @@ import com.moifinansy.domain.model.Currencies
 fun OnboardingScreen(viewModel: OnboardingViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val defaultName = stringResource(R.string.onboarding_account_default_name)
-    LaunchedEffect(defaultName) { viewModel.suggestName(defaultName) }
+    LaunchedEffect(Unit) {
+        viewModel.restart()
+        viewModel.suggestName(defaultName)
+    }
 
     Column(
         modifier = Modifier
@@ -78,6 +81,14 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = hiltViewModel()) {
                 Button(onClick = viewModel::next, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.action_next))
                 }
+                TextButton(onClick = viewModel::startWithDemo, enabled = !state.saving, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.onboarding_demo))
+                }
+                Text(
+                    stringResource(R.string.onboarding_demo_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             OnboardingState.Step.ACCOUNT -> {
                 Text(stringResource(R.string.onboarding_account_title), style = MaterialTheme.typography.titleLarge)
