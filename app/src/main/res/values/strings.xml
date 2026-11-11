@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Мои финансы</string>
+
+    <string name="tab_home">Главная</string>
+    <string name="tab_operations">Операции</string>
+    <string name="tab_debts">Долги</string>
+    <string name="tab_reports">Отчёты</string>
+    <string name="tab_more">Ещё</string>
+
+    <string name="fab_add">Добавить</string>
+    <string name="empty_screen_soon">Скоро здесь появится содержимое</string>
+</resources>
