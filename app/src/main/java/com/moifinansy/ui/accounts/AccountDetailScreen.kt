@@ -77,7 +77,7 @@ fun AccountDetailScreen(
                 GradientHeader(
                     title = stringResource(R.string.account_balance),
                     amount = MoneyFormat.format(item.balance, account.currencyCode),
-                    subtitle = stringResource(account.type.labelRes()),
+                    subtitle = if (state.showType) stringResource(account.type.labelRes()) else null,
                 )
             }
             item(key = "adjust") {

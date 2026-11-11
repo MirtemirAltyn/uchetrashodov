@@ -8,6 +8,7 @@ object Routes {
     const val ACCOUNT = "account/{id}"
     const val ACCOUNT_EDIT = "account_edit?id={id}"
     const val CATEGORIES = "categories"
+    const val SETTINGS = "settings"
     const val CATEGORY_EDIT = "category_edit?id={id}&kind={kind}&parentId={parentId}"
 
     const val NONE = -1L

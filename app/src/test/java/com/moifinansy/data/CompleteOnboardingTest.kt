@@ -19,6 +19,11 @@ class FakeSettings : SettingsRepository {
     val completed = MutableStateFlow(false)
     override val baseCurrency: Flow<String?> = currency
     override val onboardingCompleted: Flow<Boolean> = completed
+    val showTypes = MutableStateFlow(true)
+    override val showAccountTypes: Flow<Boolean> = showTypes
+    override suspend fun setShowAccountTypes(show: Boolean) {
+        showTypes.value = show
+    }
     override suspend fun setBaseCurrency(code: String) {
         currency.value = code
     }

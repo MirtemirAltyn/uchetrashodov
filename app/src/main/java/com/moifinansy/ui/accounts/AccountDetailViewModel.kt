@@ -46,6 +46,7 @@ data class AccountDetailState(
     val loading: Boolean = true,
     val account: AccountWithBalance? = null,
     val history: List<HistoryRow> = emptyList(),
+    val showType: Boolean = true,
 )
 
 data class AdjustDialogState(val text: String = "", val error: Boolean = false)
@@ -57,6 +58,7 @@ class AccountDetailViewModel @Inject constructor(
     categories: CategoryRepository,
     private val transactions: TransactionRepository,
     private val clock: Clock,
+    settings: com.moifinansy.domain.settings.SettingsRepository,
 ) : ViewModel() {
     private val accountId: Long = checkNotNull(savedStateHandle.get<Long>("id"))
 
@@ -99,7 +101,8 @@ class AccountDetailViewModel @Inject constructor(
                 }
             },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AccountDetailState())
+    }.combine(settings.showAccountTypes) { s, showType -> s.copy(showType = showType) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AccountDetailState())
 
     private val _adjust = MutableStateFlow<AdjustDialogState?>(null)
     val adjust: StateFlow<AdjustDialogState?> = _adjust.asStateFlow()

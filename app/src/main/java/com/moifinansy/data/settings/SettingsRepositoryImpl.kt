@@ -20,6 +20,13 @@ class SettingsRepositoryImpl @Inject constructor(
     override val onboardingCompleted: Flow<Boolean> =
         dataStore.data.map { it[ONBOARDING_COMPLETED] ?: false }.distinctUntilChanged()
 
+    override val showAccountTypes: Flow<Boolean> =
+        dataStore.data.map { it[SHOW_ACCOUNT_TYPES] ?: true }.distinctUntilChanged()
+
+    override suspend fun setShowAccountTypes(show: Boolean) {
+        dataStore.edit { it[SHOW_ACCOUNT_TYPES] = show }
+    }
+
     override suspend fun setBaseCurrency(code: String) {
         dataStore.edit { it[BASE_CURRENCY] = code }
     }
@@ -31,5 +38,6 @@ class SettingsRepositoryImpl @Inject constructor(
     private companion object {
         val BASE_CURRENCY = stringPreferencesKey("base_currency")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val SHOW_ACCOUNT_TYPES = booleanPreferencesKey("show_account_types")
     }
 }

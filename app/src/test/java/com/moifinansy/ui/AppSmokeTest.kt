@@ -2,6 +2,7 @@ package com.moifinansy.ui
 
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
@@ -97,6 +98,25 @@ class AppSmokeTest {
         waitForText("Карта Мбанк")
         waitForText(MoneyFormat.format(1_500_050, "KGS"))
         shot("07_accounts_two")
+
+        // Настройки: выключаем типы счетов — подписи «Наличные»/«Банковская карта» пропадают.
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Настройки")
+        click("Настройки")
+        waitForText("Типы счетов")
+        click("Типы счетов")
+        shot("07b_settings")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Счета")
+        click("Счета")
+        waitForText("Карта Мбанк")
+        compose.onAllNodes(hasText("Банковская карта")).assertCountEquals(0)
+        compose.onAllNodes(hasText("Наличные")).assertCountEquals(1) // только название счёта
+        compose.onNode(hasContentDescription("Добавить счёт")).performClick()
+        waitForText("Новый счёт")
+        compose.onAllNodes(hasText("Тип")).assertCountEquals(0)
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Всего на счетах")
 
         // Категории: расходы и доходы.
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }

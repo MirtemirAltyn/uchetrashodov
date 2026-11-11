@@ -79,11 +79,11 @@ fun AccountsScreen(
                     )
                 }
             }
-            items(state.active, key = { it.account.id }) { AccountCard(it, onClick = { onOpen(it.account.id) }) }
+            items(state.active, key = { it.account.id }) { AccountCard(it, onClick = { onOpen(it.account.id) }, showType = state.showTypes) }
             if (state.archived.isNotEmpty()) {
                 item { SectionTitle(stringResource(R.string.section_archived)) }
                 items(state.archived, key = { it.account.id }) {
-                    AccountCard(it, onClick = { onOpen(it.account.id) }, modifier = Modifier.alpha(0.6f))
+                    AccountCard(it, onClick = { onOpen(it.account.id) }, showType = state.showTypes, modifier = Modifier.alpha(0.6f))
                 }
             }
             item { androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 72.dp)) }
@@ -92,7 +92,7 @@ fun AccountsScreen(
 }
 
 @Composable
-fun AccountCard(item: AccountWithBalance, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun AccountCard(item: AccountWithBalance, onClick: () -> Unit, modifier: Modifier = Modifier, showType: Boolean = true) {
     val account = item.account
     Card(
         onClick = onClick,
@@ -109,9 +109,13 @@ fun AccountCard(item: AccountWithBalance, onClick: () -> Unit, modifier: Modifie
             IconBadge(account.icon, account.color)
             Column(Modifier.weight(1f)) {
                 Text(account.name, style = MaterialTheme.typography.bodyLarge)
-                val subtitle = stringResource(account.type.labelRes()) +
-                    if (!account.includeInTotal) " · " + stringResource(R.string.account_not_in_total) else ""
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val subtitle = listOfNotNull(
+                    if (showType) stringResource(account.type.labelRes()) else null,
+                    if (!account.includeInTotal) stringResource(R.string.account_not_in_total) else null,
+                ).joinToString(" · ")
+                if (subtitle.isNotEmpty()) {
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             MoneyText(item.balance, account.currencyCode)
         }

@@ -8,6 +8,10 @@ interface SettingsRepository {
     val baseCurrency: Flow<String?>
     val onboardingCompleted: Flow<Boolean>
 
+    /** Показывать ли тип счёта (наличные, карта…). Выключено — тип не спрашивается и не показывается. */
+    val showAccountTypes: Flow<Boolean>
+
     suspend fun setBaseCurrency(code: String)
+    suspend fun setShowAccountTypes(show: Boolean)
     suspend fun setOnboardingCompleted(completed: Boolean)
 }

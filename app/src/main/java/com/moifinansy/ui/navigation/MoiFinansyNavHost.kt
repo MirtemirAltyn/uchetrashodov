@@ -34,6 +34,7 @@ import com.moifinansy.ui.home.HomeScreen
 import com.moifinansy.ui.more.MoreScreen
 import com.moifinansy.ui.operations.OperationsScreen
 import com.moifinansy.ui.reports.ReportsScreen
+import com.moifinansy.ui.settings.SettingsScreen
 
 @Composable
 fun MoiFinansyNavHost() {
@@ -91,8 +92,10 @@ fun MoiFinansyNavHost() {
                 MoreScreen(
                     onAccounts = { navController.navigate(Routes.ACCOUNTS) },
                     onCategories = { navController.navigate(Routes.CATEGORIES) },
+                    onSettings = { navController.navigate(Routes.SETTINGS) },
                 )
             }
+            composable(Routes.SETTINGS) { SettingsScreen(onBack = navController::popBackStack) }
 
             composable(Routes.ACCOUNTS) {
                 AccountsScreen(

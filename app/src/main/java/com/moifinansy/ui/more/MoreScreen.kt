@@ -22,6 +22,7 @@ import com.moifinansy.ui.accounts.MenuRow
 fun MoreScreen(
     onAccounts: () -> Unit,
     onCategories: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: MoreViewModel = hiltViewModel(),
 ) {
     val baseCurrency by viewModel.baseCurrency.collectAsStateWithLifecycle()
@@ -49,6 +50,13 @@ fun MoreScreen(
             icon = "palette",
             color = accent,
             onClick = onCategories,
+        )
+        MenuRow(
+            stringResource(R.string.settings_title),
+            stringResource(R.string.settings_hint),
+            icon = "build",
+            color = accent,
+            onClick = onSettings,
         )
         Text(
             stringResource(R.string.more_base_currency, currencyLabel(baseCurrency)),

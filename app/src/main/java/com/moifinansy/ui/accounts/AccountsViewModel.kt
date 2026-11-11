@@ -22,6 +22,7 @@ data class AccountsState(
     val total: Long = 0,
     val active: List<AccountWithBalance> = emptyList(),
     val archived: List<AccountWithBalance> = emptyList(),
+    val showTypes: Boolean = true,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,13 +34,18 @@ class AccountsViewModel @Inject constructor(
     val state: StateFlow<AccountsState> = settings.baseCurrency
         .map { it ?: Currencies.DEFAULT }
         .flatMapLatest { base ->
-            combine(accounts.observeAccounts(includeArchived = true), accounts.observeTotal(base)) { list, total ->
+            combine(
+                accounts.observeAccounts(includeArchived = true),
+                accounts.observeTotal(base),
+                settings.showAccountTypes,
+            ) { list, total, showTypes ->
                 AccountsState(
                     loading = false,
                     baseCurrency = base,
                     total = total,
                     active = list.filterNot { it.account.isArchived },
                     archived = list.filter { it.account.isArchived },
+                    showTypes = showTypes,
                 )
             }
         }

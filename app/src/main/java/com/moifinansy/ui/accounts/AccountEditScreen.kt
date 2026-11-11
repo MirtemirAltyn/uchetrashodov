@@ -64,8 +64,10 @@ fun AccountEditScreen(onDone: () -> Unit, viewModel: AccountEditViewModel = hilt
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            SectionTitle(stringResource(R.string.account_field_type))
-            AccountTypeChips(selected = state.type, onSelect = viewModel::setType)
+            if (state.showType) {
+                SectionTitle(stringResource(R.string.account_field_type))
+                AccountTypeChips(selected = state.type, onSelect = viewModel::setType)
+            }
             CurrencyDropdown(
                 selected = state.currencyCode,
                 onSelect = viewModel::setCurrency,

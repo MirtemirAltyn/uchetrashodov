@@ -35,6 +35,7 @@ data class AccountEditState(
     val nameError: Boolean = false,
     val balanceError: Boolean = false,
     val showDeleteDialog: Boolean = false,
+    val showType: Boolean = true,
     /** Сохранено или удалено — экран закрывается. */
     val done: Boolean = false,
 ) {
@@ -57,8 +58,17 @@ class AccountEditViewModel @Inject constructor(
         viewModelScope.launch {
             val account = accountId?.let { accounts.get(it) }
             original = account
+            val showType = settings.showAccountTypes.first()
             _state.value = if (account == null) {
-                AccountEditState(loading = false, currencyCode = settings.baseCurrency.first() ?: Currencies.DEFAULT)
+                // Без типов новый счёт получает тип «Другое».
+                val type = if (showType) AccountType.CARD else AccountType.OTHER
+                AccountEditState(
+                    loading = false,
+                    currencyCode = settings.baseCurrency.first() ?: Currencies.DEFAULT,
+                    type = type,
+                    icon = AccountDefaults.icon(type),
+                    showType = showType,
+                )
             } else {
                 AccountEditState(
                     loading = false,
@@ -72,6 +82,7 @@ class AccountEditViewModel @Inject constructor(
                     includeInTotal = account.includeInTotal,
                     isArchived = account.isArchived,
                     usageCount = accounts.usageCount(account.id),
+                    showType = showType,
                 )
             }
         }

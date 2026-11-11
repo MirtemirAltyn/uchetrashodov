@@ -50,6 +50,10 @@
     <string name="more_accounts_hint">Карты, наличные, накопления</string>
     <string name="more_categories">Категории</string>
     <string name="more_categories_hint">Расходы и доходы, подкатегории</string>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_hint">Вид счетов и другие параметры</string>
+    <string name="settings_account_types">Типы счетов</string>
+    <string name="settings_account_types_hint">Наличные, карта, кошелёк и т. д. Если выключить, тип не спрашивается при создании счёта и не показывается в списке.</string>
     <string name="more_base_currency">Основная валюта: %1$s</string>
 
     <!-- Счета -->
