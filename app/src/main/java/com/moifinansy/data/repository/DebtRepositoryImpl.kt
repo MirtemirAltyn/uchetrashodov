@@ -49,6 +49,8 @@ class DebtRepositoryImpl @Inject constructor(
     override suspend fun getContact(id: Long): Contact? = dao.getContact(id)?.toModel()
     override fun observeContact(id: Long): Flow<Contact?> = dao.observeContact(id).map { it?.toModel() }
     override suspend fun deleteDebt(id: Long) = dao.deleteDebt(id)
+    override suspend fun setAffectsAccounts(debtId: Long, affects: Boolean, accountId: Long?) =
+        dao.setAffectsAccounts(debtId, affects, accountId, clock.millis())
     override suspend fun deleteContact(id: Long): Boolean = dao.deleteContactIfUnused(id) > 0
 
     override suspend fun createDebt(debt: Debt, accountId: Long?): Long {

@@ -71,6 +71,7 @@ class DebtEditViewModel @Inject constructor(
             val inCurrency = accounts.filter { it.currencyCode == base }
             _state.value = DebtEditState(
                 loading = false,
+                affectsAccounts = settings.debtsAffectBalance.first(),
                 contacts = contacts,
                 contactId = argContactId,
                 newContact = contacts.isEmpty(),

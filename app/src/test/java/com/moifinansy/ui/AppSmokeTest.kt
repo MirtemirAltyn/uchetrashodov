@@ -241,6 +241,17 @@ class AppSmokeTest {
         click("Провести")
         waitForText("Возвращено " + MoneyFormat.formatNumber(400_000) + "\u00A0сом из " + MoneyFormat.formatNumber(1_400_000) + "\u00A0сом")
         shot("13_debt_detail")
+
+        // Выключаем влияние на баланс и включаем обратно по тому же счёту.
+        click("Влияет на баланс")
+        waitForText("Не учитывать долг в балансе?")
+        click("Не учитывать")
+        waitForText("Счета не меняются; долг только учитывается")
+        click("Влияет на баланс")
+        waitForText("Провести долг по счёту")
+        shot("13b_debt_affects")
+        compose.onNode(hasText("Провести") and hasClickAction()).performClick()
+        waitForText("Выдача и погашения проведены по счёту «Наличные»")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
         waitForText("Сальдо по долгам")
         waitForText(MoneyFormat.format(1_000_000, "KGS", signed = true))

@@ -392,4 +392,22 @@
     <string name="hidden_amount">•••••</string>
     <string name="show_amounts">Показать суммы</string>
     <string name="hide_amounts">Скрыть суммы</string>
+
+    <!-- Долги и баланс -->
+    <string name="debt_balance_question">Как записать в баланс?</string>
+    <string name="debt_balance_out">Списать со счёта</string>
+    <string name="debt_balance_in">Зачислить на счёт</string>
+    <string name="debt_balance_none">Не трогать баланс</string>
+    <string name="debt_balance_none_hint">Долг только записывается, счета не меняются (удобно для старых долгов)</string>
+    <string name="debt_affects">Влияет на баланс</string>
+    <string name="debt_affects_on_hint">Выдача и погашения проведены по счёту «%1$s»</string>
+    <string name="debt_affects_off_hint">Счета не меняются; долг только учитывается</string>
+    <string name="debt_affects_pick_account">Провести долг по счёту</string>
+    <string name="debt_affects_apply">Провести</string>
+    <string name="debt_affects_off_title">Не учитывать долг в балансе?</string>
+    <string name="debt_affects_off_text">Операции этого долга по счетам удалятся, балансы станут такими, как будто долга не было. Сам долг и его история останутся.</string>
+    <string name="debt_affects_off_confirm">Не учитывать</string>
+    <string name="settings_section_debts">Долги</string>
+    <string name="settings_debts_affect">Новые долги влияют на баланс</string>
+    <string name="settings_debts_affect_hint">Какой вариант выбран сразу при записи долга. Его всегда можно поменять в форме и в карточке долга.</string>
 </resources>

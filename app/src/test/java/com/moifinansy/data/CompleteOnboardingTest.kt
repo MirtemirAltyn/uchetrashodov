@@ -31,6 +31,11 @@ class FakeSettings : SettingsRepository {
     override suspend fun setDebtReminderDays(days: Int) {
         debtDays.value = days
     }
+    val debtsAffect = MutableStateFlow(true)
+    override val debtsAffectBalance: Flow<Boolean> = debtsAffect
+    override suspend fun setDebtsAffectBalance(value: Boolean) {
+        debtsAffect.value = value
+    }
     val notified = mutableSetOf<String>()
     override suspend fun wasNotified(key: String) = key in notified
     override suspend fun markNotified(key: String) {

@@ -48,6 +48,7 @@ data class SettingsState(
     val baseCurrency: String = Currencies.DEFAULT,
     val missingRates: List<String> = emptyList(),
     val security: SecuritySettings = SecuritySettings(),
+    val debtsAffectBalance: Boolean = true,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -68,8 +69,8 @@ class SettingsViewModel @Inject constructor(
         SettingsState(showAccountTypes = types, debtReminderDays = days, theme = theme, firstDay = firstDay, hideAmounts = hide)
     }
 
-    val state: StateFlow<SettingsState> = combine(basic, settings.baseCurrency, settings.security) { b, base, security ->
-        b.copy(baseCurrency = base ?: Currencies.DEFAULT, security = security)
+    val state: StateFlow<SettingsState> = combine(basic, settings.baseCurrency, settings.security, settings.debtsAffectBalance) { b, base, security, debts ->
+        b.copy(baseCurrency = base ?: Currencies.DEFAULT, security = security, debtsAffectBalance = debts)
     }.flatMapLatest { s -> accounts.observeCurrenciesWithoutRate(s.baseCurrency).let { flow -> combine(flow, kotlinx.coroutines.flow.flowOf(s)) { missing, st -> st.copy(missingRates = missing) } } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsState())
 
@@ -83,6 +84,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setShowAccountTypes(value: Boolean) = launch { settings.setShowAccountTypes(value) }
     fun setDebtReminderDays(days: Int) = launch { settings.setDebtReminderDays(days) }
+    fun setDebtsAffectBalance(value: Boolean) = launch { settings.setDebtsAffectBalance(value) }
     fun setTheme(mode: ThemeMode) = launch { settings.setTheme(mode) }
     fun setFirstDay(day: DayOfWeek) = launch { settings.setFirstDayOfWeek(day) }
     fun setHideAmounts(value: Boolean) = launch { settings.setHideAmounts(value) }

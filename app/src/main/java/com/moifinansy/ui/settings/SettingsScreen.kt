@@ -131,6 +131,14 @@ fun SettingsScreen(
             LinkRow(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_hint)) { backupLauncher.launch("moi-finansy-backup-$today.json") }
             LinkRow(stringResource(R.string.settings_restore), null) { restoreLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
 
+            Section(stringResource(R.string.settings_section_debts))
+            SwitchRow(
+                stringResource(R.string.settings_debts_affect),
+                stringResource(R.string.settings_debts_affect_hint),
+                state.debtsAffectBalance,
+                viewModel::setDebtsAffectBalance,
+            )
+
             Section(stringResource(R.string.settings_section_reminders))
             Label(stringResource(R.string.settings_debt_days))
             Chips {

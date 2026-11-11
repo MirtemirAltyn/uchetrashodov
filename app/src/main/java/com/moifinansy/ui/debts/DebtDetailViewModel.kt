@@ -82,6 +82,38 @@ class DebtDetailViewModel @Inject constructor(
     private val _panel = MutableStateFlow<PaymentPanel?>(null)
     val panel: StateFlow<PaymentPanel?> = _panel.asStateFlow()
 
+    /** Панель «провести долг по счёту» при включении влияния на баланс; значение — выбранный счёт. */
+    private val _affectsPanel = MutableStateFlow<Long?>(null)
+    val affectsPanel: StateFlow<Long?> = _affectsPanel.asStateFlow()
+    private val _affectsPanelOpen = MutableStateFlow(false)
+    val affectsPanelOpen: StateFlow<Boolean> = _affectsPanelOpen.asStateFlow()
+
+    fun openAffectsPanel() {
+        val s = state.value
+        _affectsPanel.value = accountsForDebt(s).let { list -> list.firstOrNull { it.id == s.debt?.initialAccountId } ?: list.firstOrNull() }?.id
+        _affectsPanelOpen.value = true
+    }
+
+    fun closeAffectsPanel() {
+        _affectsPanelOpen.value = false
+    }
+
+    fun setAffectsAccount(id: Long) {
+        _affectsPanel.value = id
+    }
+
+    fun enableAffects() {
+        val account = _affectsPanel.value ?: return
+        viewModelScope.launch {
+            debts.setAffectsAccounts(debtId, true, account)
+            _affectsPanelOpen.value = false
+        }
+    }
+
+    fun disableAffects() {
+        viewModelScope.launch { debts.setAffectsAccounts(debtId, false, null) }
+    }
+
     private val _deleted = MutableStateFlow(false)
     val deleted: StateFlow<Boolean> = _deleted.asStateFlow()
 

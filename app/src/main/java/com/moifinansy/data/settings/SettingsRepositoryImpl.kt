@@ -43,6 +43,12 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[DEBT_DAYS] = days }
     }
 
+    override val debtsAffectBalance: Flow<Boolean> = dataStore.data.map { it[DEBTS_AFFECT] ?: true }.distinctUntilChanged()
+
+    override suspend fun setDebtsAffectBalance(value: Boolean) {
+        dataStore.edit { it[DEBTS_AFFECT] = value }
+    }
+
     override suspend fun wasNotified(key: String): Boolean = key in (dataStore.data.first()[NOTIFIED] ?: emptySet())
 
     override suspend fun markNotified(key: String) {
@@ -116,6 +122,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val BIOMETRIC = booleanPreferencesKey("biometric")
         val LOCK_AFTER = androidx.datastore.preferences.core.intPreferencesKey("lock_after_minutes")
         val DEBT_DAYS = androidx.datastore.preferences.core.intPreferencesKey("debt_reminder_days")
+        val DEBTS_AFFECT = booleanPreferencesKey("debts_affect_balance")
         val NOTIFIED = androidx.datastore.preferences.core.stringSetPreferencesKey("notified_keys")
     }
 }

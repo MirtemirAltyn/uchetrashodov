@@ -22,6 +22,10 @@ interface SettingsRepository {
     val debtReminderDays: Flow<Int>
     suspend fun setDebtReminderDays(days: Int)
 
+    /** Новые долги по умолчанию влияют на баланс счетов. */
+    val debtsAffectBalance: Flow<Boolean>
+    suspend fun setDebtsAffectBalance(value: Boolean)
+
     /** Ключи уже показанных напоминаний (чтобы не повторять). */
     suspend fun wasNotified(key: String): Boolean
     suspend fun markNotified(key: String)

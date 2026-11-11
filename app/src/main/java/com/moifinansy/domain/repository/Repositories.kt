@@ -95,6 +95,9 @@ interface DebtRepository {
     fun observe(id: Long): Flow<DebtWithRemaining?>
     suspend fun getContact(id: Long): Contact?
     fun observeContact(id: Long): Flow<Contact?>
+    /** Включить (по счёту [accountId]) или выключить влияние долга на баланс счетов. */
+    suspend fun setAffectsAccounts(debtId: Long, affects: Boolean, accountId: Long?)
+
     /** Удаляет долг вместе с движениями и связанными операциями по счетам. */
     suspend fun deleteDebt(id: Long)
     /** Удаляет контакт, если у него нет долгов. true — удалён. */

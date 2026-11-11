@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -146,12 +145,23 @@ fun DebtEditScreen(onBack: () -> Unit, onSaved: (Long) -> Unit, viewModel: DebtE
             )
             CurrencyDropdown(selected = state.currencyCode, onSelect = viewModel::setCurrency)
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.debt_not_affects))
-                    Text(stringResource(R.string.debt_not_affects_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SectionTitle(stringResource(R.string.debt_balance_question))
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = state.affectsAccounts,
+                    onClick = { viewModel.setAffectsAccounts(true) },
+                    shape = SegmentedButtonDefaults.itemShape(0, 2),
+                ) {
+                    Text(stringResource(if (state.direction == DebtDirection.OWED_TO_ME) R.string.debt_balance_out else R.string.debt_balance_in))
                 }
-                Switch(checked = !state.affectsAccounts, onCheckedChange = { viewModel.setAffectsAccounts(!it) })
+                SegmentedButton(
+                    selected = !state.affectsAccounts,
+                    onClick = { viewModel.setAffectsAccounts(false) },
+                    shape = SegmentedButtonDefaults.itemShape(1, 2),
+                ) { Text(stringResource(R.string.debt_balance_none)) }
+            }
+            if (!state.affectsAccounts) {
+                Text(stringResource(R.string.debt_balance_none_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (state.affectsAccounts) {
                 Dropdown(

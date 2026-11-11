@@ -179,6 +179,60 @@ abstract class DebtDao {
         return paymentId
     }
 
+    @Query("DELETE FROM transactions WHERE debtId = :debtId")
+    protected abstract suspend fun deleteDebtTransactions(debtId: Long)
+
+    @Query("UPDATE debt_payments SET accountId = NULL, transactionId = NULL, updatedAt = :now WHERE debtId = :debtId")
+    protected abstract suspend fun detachPayments(debtId: Long, now: Long)
+
+    @Query("UPDATE debt_payments SET accountId = :accountId, transactionId = :transactionId, updatedAt = :now WHERE id = :paymentId")
+    protected abstract suspend fun attachPayment(paymentId: Long, accountId: Long, transactionId: Long, now: Long)
+
+    @Query("UPDATE debts SET affectsAccounts = :affects, updatedAt = :now WHERE id = :debtId")
+    protected abstract suspend fun setAffects(debtId: Long, affects: Boolean, now: Long)
+
+    @Query("SELECT * FROM debt_payments WHERE debtId = :debtId ORDER BY date, id")
+    protected abstract suspend fun paymentsOf(debtId: Long): List<DebtPaymentEntity>
+
+    /**
+     * Включает или выключает влияние долга на баланс. Выключение удаляет операции долга по счетам
+     * (балансы как без долга); включение проводит все движения (кроме прощения) по счёту [accountId].
+     * Всё — одной транзакцией БД.
+     */
+    @Transaction
+    open suspend fun setAffectsAccounts(debtId: Long, affects: Boolean, accountId: Long?, now: Long) {
+        val debt = requireNotNull(getDebt(debtId)) { "Долг $debtId не найден" }
+        if (debt.affectsAccounts == affects) return
+        if (!affects) {
+            deleteDebtTransactions(debtId)
+            detachPayments(debtId, now)
+        } else {
+            val account = requireNotNull(accountId) { "Укажите счёт" }
+            paymentsOf(debtId).filter { it.kind != DebtPaymentKind.FORGIVE }.forEach { p ->
+                val transactionId = insertTransaction(
+                    TransactionEntity(
+                        type = TransactionType.DEBT,
+                        amount = DebtMath.accountEffect(debt.direction, p.kind, p.amount),
+                        accountId = account,
+                        categoryId = null,
+                        toAccountId = null,
+                        toAmount = null,
+                        fee = 0,
+                        date = p.date,
+                        note = p.note,
+                        debtId = debtId,
+                        recurringId = null,
+                        receiptUri = null,
+                        createdAt = now,
+                        updatedAt = now,
+                    ),
+                )
+                attachPayment(p.id, account, transactionId, now)
+            }
+        }
+        setAffects(debtId, affects, now)
+    }
+
     companion object {
         /** Остаток долга `d` = INITIAL + INCREASE − REPAY − FORGIVE. */
         const val REMAINING_SQL =

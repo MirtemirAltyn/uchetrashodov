@@ -25,6 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -68,6 +71,7 @@ fun DebtDetailScreen(
     val deleted by viewModel.deleted.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmAffectsOff by remember { mutableStateOf(false) }
     val colors = LocalFinanceColors.current
 
     LaunchedEffect(deleted, state.loading, state.debt) { if (deleted || (!state.loading && state.debt == null)) onBack() }
@@ -118,9 +122,51 @@ fun DebtDetailScreen(
                     if (d.dueDate == null && d.status == DebtStatus.ACTIVE) {
                         Text(stringResource(R.string.debt_no_due), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    if (!d.affectsAccounts) Text(stringResource(R.string.debt_not_affects), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     d.note?.takeIf { it.isNotBlank() }?.let { Text(it) }
                     TextButton(onClick = { onOpenContact(d.contactId) }) { Text(stringResource(R.string.contact_title) + ": " + name) }
+                }
+            }
+            item(key = "affects") {
+                val panelOpen by viewModel.affectsPanelOpen.collectAsStateWithLifecycle()
+                val panelAccount by viewModel.affectsPanel.collectAsStateWithLifecycle()
+                val initialName = state.accounts.firstOrNull { it.id == debt.initialAccountId }?.name.orEmpty()
+                Column {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .toggleable(value = d.affectsAccounts, role = Role.Switch) { on ->
+                                if (on) viewModel.openAffectsPanel() else confirmAffectsOff = true
+                            }
+                            .padding(vertical = Spacing.grid),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.debt_affects))
+                            Text(
+                                if (d.affectsAccounts) stringResource(R.string.debt_affects_on_hint, initialName) else stringResource(R.string.debt_affects_off_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(checked = d.affectsAccounts, onCheckedChange = null)
+                    }
+                    if (panelOpen && !d.affectsAccounts) {
+                        val options = viewModel.accountsForDebt(state)
+                        Dropdown(
+                            label = stringResource(R.string.debt_affects_pick_account),
+                            options = options,
+                            selected = options.firstOrNull { it.id == panelAccount },
+                            optionText = { it.name },
+                            onSelect = { viewModel.setAffectsAccount(it.id) },
+                            supportingText = if (options.isEmpty()) stringResource(R.string.debt_no_account_currency) else null,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.grid)) {
+                            TextButton(onClick = viewModel::closeAffectsPanel, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_cancel)) }
+                            Button(onClick = viewModel::enableAffects, enabled = panelAccount != null, modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.debt_affects_apply))
+                            }
+                        }
+                    }
                 }
             }
             item(key = "actions") {
@@ -156,6 +202,21 @@ fun DebtDetailScreen(
                 }
             }
         }
+    }
+
+    if (confirmAffectsOff) {
+        AlertDialog(
+            onDismissRequest = { confirmAffectsOff = false },
+            title = { Text(stringResource(R.string.debt_affects_off_title)) },
+            text = { Text(stringResource(R.string.debt_affects_off_text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmAffectsOff = false
+                    viewModel.disableAffects()
+                }) { Text(stringResource(R.string.debt_affects_off_confirm)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmAffectsOff = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
     }
 
     if (confirmDelete) {
