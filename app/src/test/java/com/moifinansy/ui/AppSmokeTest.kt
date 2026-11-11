@@ -61,14 +61,42 @@ class AppSmokeTest {
         shot("02_onboarding_account")
         click("Начать")
 
-        // Главный экран с нижней панелью.
+        // Главный экран: добавляем расход за три нажатия — «+», категория, «Сохранить».
+        waitForText("Общий баланс")
+        compose.onNode(hasContentDescription("Добавить")).performClick()
+        waitForText("Новая операция")
+        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Сумма", substring = true), 10_000)
+        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("120+35")
+        waitForText("= " + MoneyFormat.format(15_500, "KGS"))
+        click("Продукты")
+        shot("02b_operation_edit")
+        compose.onNodeWithText("Сохранить").performScrollTo().performClick()
+        waitForText("Куда ушли деньги")
+        waitForText(MoneyFormat.format(-15_500, "KGS", signed = true))
+        waitForText(MoneyFormat.format(1_234_500, "KGS"))
+        shot("02c_home")
+
+        // Список операций, удаление с отменой.
+        click("Операции")
+        waitForText("Поиск по комментарию и категории")
+        waitForText("Продукты")
+        shot("02d_operations")
+        click("Продукты")
+        waitForText("Изменить операцию")
+        compose.onNode(hasContentDescription("Удалить")).performClick()
+        waitForText("Операция удалена")
+        click("Отменить")
+        waitForText("Продукты")
+        click("Главная")
+        waitForText(MoneyFormat.format(1_234_500, "KGS"))
+
         waitForText("Ещё")
         click("Ещё")
         waitForText("Счета")
         shot("03_more")
         click("Счета")
 
-        val total = MoneyFormat.format(1_250_000, "KGS")
+        val total = MoneyFormat.format(1_234_500, "KGS")
         waitForText("Наличные")
         waitForText(total)
         shot("04_accounts")
@@ -81,7 +109,7 @@ class AppSmokeTest {
         compose.onNode(hasSetTextAction() and hasText("Фактический баланс", substring = true)).performTextReplacement("10000")
         shot("05a_account_adjust")
         click("Применить")
-        waitForText(MoneyFormat.format(-250_000, "KGS", signed = true))
+        waitForText(MoneyFormat.format(-234_500, "KGS", signed = true))
         waitForText(MoneyFormat.format(1_000_000, "KGS"))
         shot("05_account_detail")
 

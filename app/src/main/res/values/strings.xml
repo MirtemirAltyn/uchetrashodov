@@ -111,4 +111,69 @@
     <string name="category_delete_has_children">Сначала удалите подкатегории или перенесите их операции.</string>
     <string name="category_delete_move_to">Перенести в</string>
     <string name="category_delete_choose">Выберите категорию</string>
+
+    <!-- Операции -->
+    <string name="op_new_expense">Новая операция</string>
+    <string name="op_edit">Изменить операцию</string>
+    <string name="op_type_expense">Расход</string>
+    <string name="op_type_income">Доход</string>
+    <string name="op_type_transfer">Перевод</string>
+    <string name="op_amount">Сумма</string>
+    <string name="op_amount_hint">Можно считать: 120+35, 3×250</string>
+    <string name="op_amount_result">= %1$s</string>
+    <string name="op_account">Счёт</string>
+    <string name="op_from_account">Со счёта</string>
+    <string name="op_to_account">На счёт</string>
+    <string name="op_to_amount">Зачислено, %1$s</string>
+    <string name="op_to_amount_hint">Счета в разных валютах: сколько пришло на счёт получателя</string>
+    <string name="op_fee">Комиссия</string>
+    <string name="op_category">Категория</string>
+    <string name="op_category_required">Выберите категорию</string>
+    <string name="op_subcategory_any">Без подкатегории</string>
+    <string name="op_date">Дата</string>
+    <string name="op_today">Сегодня</string>
+    <string name="op_yesterday">Вчера</string>
+    <string name="op_pick_date">Другая дата</string>
+    <string name="op_note">Комментарий</string>
+    <string name="op_tags">Теги</string>
+    <string name="op_new_tag">Новый тег</string>
+    <string name="op_add_tag">Добавить тег</string>
+    <string name="op_copy">Копировать</string>
+    <string name="op_deleted">Операция удалена</string>
+    <string name="op_undo">Отменить</string>
+    <string name="op_no_accounts">Сначала добавьте счёт в «Ещё → Счета»</string>
+    <string name="op_same_account">Выберите другой счёт получателя</string>
+    <string name="op_adjustment_amount">Изменение баланса (со знаком)</string>
+    <string name="ok">ОК</string>
+
+    <string name="ops_search">Поиск по комментарию и категории</string>
+    <string name="ops_all_time">Всё время</string>
+    <string name="ops_filters">Фильтры</string>
+    <string name="ops_filter_type_all">Все</string>
+    <string name="ops_filter_account">Счёт</string>
+    <string name="ops_filter_category">Категория</string>
+    <string name="ops_filter_tag">Тег</string>
+    <string name="ops_filter_any">Любой</string>
+    <string name="ops_filter_min">Сумма от</string>
+    <string name="ops_filter_max">Сумма до</string>
+    <string name="ops_filter_reset">Сбросить фильтры</string>
+    <string name="ops_empty">Операций нет. Нажмите «+», чтобы добавить расход.</string>
+    <string name="ops_empty_filtered">Под фильтры ничего не подходит</string>
+    <string name="ops_prev">Предыдущий период</string>
+    <string name="ops_next">Следующий период</string>
+    <string name="op_transfer_title">%1$s → %2$s</string>
+
+    <!-- Главная -->
+    <string name="home_total">Общий баланс</string>
+    <string name="home_month">%1$s</string>
+    <string name="home_income">Доходы</string>
+    <string name="home_expense">Расходы</string>
+    <string name="home_top_categories">Куда ушли деньги</string>
+    <string name="home_debts">Долги</string>
+    <string name="home_i_owe">Я должен</string>
+    <string name="home_owed_to_me">Мне должны</string>
+    <string name="home_due_soon">Скоро срок</string>
+    <string name="home_latest">Последние операции</string>
+    <string name="home_all_operations">Все операции</string>
+    <string name="home_no_expenses">В этом месяце расходов пока нет</string>
 </resources>

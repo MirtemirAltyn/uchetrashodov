@@ -32,6 +32,7 @@ data class HistoryRow(
     val date: Long,
     val effect: Long,
     val note: String?,
+    val debtId: Long? = null,
 ) {
     sealed interface Label {
         data class Category(val name: String?) : Label
@@ -97,6 +98,7 @@ class AccountDetailViewModel @Inject constructor(
                     )
                     TransactionType.DEBT -> HistoryRow(
                         t.id, HistoryRow.Label.Debt, "attach_money", account?.color ?: DEFAULT_COLOR, t.date, t.effectOn(accountId), t.note,
+                        debtId = t.debtId,
                     )
                 }
             },

@@ -177,3 +177,32 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
+
+/** Белая карточка-раздел со скруглением 20 dp и заголовком. */
+@Composable
+fun SectionCard(
+    title: String?,
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    androidx.compose.material3.Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 1.dp,
+    ) {
+        Column(Modifier.padding(vertical = Spacing.grid * 1.5f)) {
+            if (title != null || action != null) {
+                androidx.compose.foundation.layout.Row(
+                    Modifier.fillMaxWidth().padding(horizontal = Spacing.screenHorizontal),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(title.orEmpty(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    action?.invoke()
+                }
+            }
+            content()
+        }
+    }
+}

@@ -1,5 +1,6 @@
 package com.moifinansy.ui.accounts
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,6 +46,7 @@ import com.moifinansy.core.ui.theme.Spacing
 fun AccountDetailScreen(
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
+    onOpenOperation: (id: Long, debtId: Long?) -> Unit,
     viewModel: AccountDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -96,7 +98,9 @@ fun AccountDetailScreen(
                     Text(stringResource(R.string.account_history_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            items(state.history, key = { it.id }) { row -> HistoryItem(row, account.currencyCode) }
+            items(state.history, key = { it.id }) { row ->
+                HistoryItem(row, account.currencyCode, onClick = { onOpenOperation(row.id, row.debtId) })
+            }
         }
     }
 }
@@ -133,7 +137,7 @@ private fun AdjustPanel(dialog: AdjustDialogState, viewModel: AccountDetailViewM
 }
 
 @Composable
-private fun HistoryItem(row: HistoryRow, currencyCode: String) {
+private fun HistoryItem(row: HistoryRow, currencyCode: String, onClick: () -> Unit) {
     val unknownAccount = stringResource(R.string.operation_unknown_account)
     val title = when (val label = row.label) {
         is HistoryRow.Label.Category -> label.name ?: stringResource(R.string.operation_unknown_category)
@@ -145,6 +149,7 @@ private fun HistoryItem(row: HistoryRow, currencyCode: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = Spacing.grid),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.grid * 1.5f),

@@ -55,6 +55,12 @@ interface TransactionRepository {
     fun observeRange(from: Long, to: Long): Flow<List<Transaction>>
     /** Операции, где счёт — источник или получатель, новые сверху. */
     fun observeForAccount(accountId: Long): Flow<List<Transaction>>
+    fun observeFiltered(filter: com.moifinansy.domain.model.OperationFilter): Flow<List<Transaction>>
+    fun observeLatest(limit: Int): Flow<List<Transaction>>
+    fun observeTotalExpense(from: Long, to: Long): Flow<Long>
+    fun observeTotalIncome(from: Long, to: Long): Flow<Long>
+    /** Расходы по категориям (по самим категориям операций, без свёртки в родителя). */
+    fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotal>>
     suspend fun get(id: Long): Transaction?
     /** Создаёт (id == 0) или обновляет операцию вместе с тегами. Возвращает id. */
     suspend fun save(transaction: Transaction, tagIds: List<Long> = emptyList()): Long

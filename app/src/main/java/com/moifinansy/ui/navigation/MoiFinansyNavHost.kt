@@ -32,7 +32,19 @@ import com.moifinansy.ui.categories.CategoryEditScreen
 import com.moifinansy.ui.debts.DebtsScreen
 import com.moifinansy.ui.home.HomeScreen
 import com.moifinansy.ui.more.MoreScreen
+import com.moifinansy.ui.operations.OperationEditScreen
+import com.moifinansy.ui.operations.OperationItem
 import com.moifinansy.ui.operations.OperationsScreen
+import com.moifinansy.ui.operations.UndoViewModel
+import com.moifinansy.domain.model.TransactionType
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.moifinansy.ui.reports.ReportsScreen
 import com.moifinansy.ui.settings.SettingsScreen
 
@@ -45,11 +57,39 @@ fun MoiFinansyNavHost() {
         type = NavType.LongType
         defaultValue = Routes.NONE
     }
+    fun navigateTab(destination: TopLevelDestination) {
+        navController.navigate(destination.route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+    fun openDebt(id: Long) = navController.navigate(Routes.debt(id))
+    fun openOperation(item: OperationItem) {
+        if (item.type == TransactionType.DEBT) {
+            item.transaction.debtId?.let(::openDebt)
+        } else {
+            navController.navigate(Routes.operationEdit(item.id))
+        }
+    }
+
+    val undoViewModel: UndoViewModel = hiltViewModel()
+    val deleted by undoViewModel.deleted.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val deletedText = stringResource(R.string.op_deleted)
+    val undoText = stringResource(R.string.op_undo)
+    LaunchedEffect(deleted) {
+        if (deleted != null) {
+            val result = snackbarHostState.showSnackbar(deletedText, actionLabel = undoText, duration = SnackbarDuration.Short)
+            if (result == SnackbarResult.ActionPerformed) undoViewModel.undo() else undoViewModel.dismiss()
+        }
+    }
 
     Scaffold(
         // Отступы системных панелей обрабатывают сами экраны; здесь — только высота нижней панели.
         contentWindowInsets = WindowInsets(0),
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (current != null) {
                 NavigationBar {
@@ -57,13 +97,7 @@ fun MoiFinansyNavHost() {
                         val label = stringResource(destination.labelRes)
                         NavigationBarItem(
                             selected = destination == current,
-                            onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
+                            onClick = { navigateTab(destination) },
                             icon = { Icon(destination.icon, contentDescription = null) },
                             label = { Text(label) },
                         )
@@ -73,7 +107,12 @@ fun MoiFinansyNavHost() {
         },
         floatingActionButton = {
             if (current?.hasFab == true) {
-                FloatingActionButton(onClick = { /* Экран добавления — этап 4 */ }) {
+                FloatingActionButton(onClick = {
+                    when (current) {
+                        TopLevelDestination.DEBTS -> Unit // экран нового долга — этап 5
+                        else -> navController.navigate(Routes.operationEdit())
+                    }
+                }) {
                     Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.fab_add))
                 }
             }
@@ -84,8 +123,38 @@ fun MoiFinansyNavHost() {
             startDestination = TopLevelDestination.start.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(TopLevelDestination.HOME.route) { HomeScreen() }
-            composable(TopLevelDestination.OPERATIONS.route) { OperationsScreen() }
+            composable(TopLevelDestination.HOME.route) {
+                HomeScreen(
+                    onOpenAccount = { navController.navigate(Routes.account(it)) },
+                    onOpenOperation = ::openOperation,
+                    onAllOperations = { navigateTab(TopLevelDestination.OPERATIONS) },
+                    onDebts = { navigateTab(TopLevelDestination.DEBTS) },
+                    onOpenDebt = ::openDebt,
+                )
+            }
+            composable(TopLevelDestination.OPERATIONS.route) { OperationsScreen(onOpen = ::openOperation) }
+            composable(
+                Routes.OPERATION_EDIT,
+                arguments = listOf(
+                    idArg,
+                    navArgument("type") {
+                        type = NavType.StringType
+                        defaultValue = TransactionType.EXPENSE.name
+                    },
+                    navArgument("copyFrom") {
+                        type = NavType.LongType
+                        defaultValue = Routes.NONE
+                    },
+                ),
+            ) {
+                OperationEditScreen(
+                    onDone = navController::popBackStack,
+                    onCopy = { id ->
+                        navController.popBackStack()
+                        navController.navigate(Routes.operationEdit(copyFrom = id))
+                    },
+                )
+            }
             composable(TopLevelDestination.DEBTS.route) { DebtsScreen() }
             composable(TopLevelDestination.REPORTS.route) { ReportsScreen() }
             composable(TopLevelDestination.MORE.route) {
@@ -108,6 +177,9 @@ fun MoiFinansyNavHost() {
                 AccountDetailScreen(
                     onBack = navController::popBackStack,
                     onEdit = { navController.navigate(Routes.accountEdit(it)) },
+                    onOpenOperation = { id, debtId ->
+                        if (debtId != null) openDebt(debtId) else navController.navigate(Routes.operationEdit(id))
+                    },
                 )
             }
             composable(Routes.ACCOUNT_EDIT, arguments = listOf(idArg)) {

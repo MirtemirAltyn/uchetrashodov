@@ -13,5 +13,9 @@ interface SettingsRepository {
 
     suspend fun setBaseCurrency(code: String)
     suspend fun setShowAccountTypes(show: Boolean)
+
+    /** Счёт последней операции — подставляется в новую операцию. */
+    val lastAccountId: Flow<Long?>
+    suspend fun setLastAccountId(id: Long)
     suspend fun setOnboardingCompleted(completed: Boolean)
 }

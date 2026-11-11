@@ -27,6 +27,32 @@ abstract class TransactionDao {
     @Query("SELECT * FROM transactions WHERE date >= :from AND date < :to ORDER BY date DESC, id DESC")
     abstract fun observeRange(from: Long, to: Long): Flow<List<TransactionEntity>>
 
+    /** Операции периода с фильтрами; null в фильтре — «любой». Категория учитывает и её подкатегории. */
+    @Query(
+        "SELECT * FROM transactions t WHERE t.date >= :from AND t.date < :to " +
+            "AND (:type IS NULL OR t.type = :type) " +
+            "AND (:accountId IS NULL OR t.accountId = :accountId OR t.toAccountId = :accountId) " +
+            "AND (:categoryId IS NULL OR t.categoryId = :categoryId " +
+            "OR t.categoryId IN (SELECT c.id FROM categories c WHERE c.parentId = :categoryId)) " +
+            "AND (:tagId IS NULL OR t.id IN (SELECT tt.transactionId FROM transaction_tags tt WHERE tt.tagId = :tagId)) " +
+            "AND (:minAmount IS NULL OR ABS(t.amount) >= :minAmount) " +
+            "AND (:maxAmount IS NULL OR ABS(t.amount) <= :maxAmount) " +
+            "ORDER BY t.date DESC, t.id DESC",
+    )
+    abstract fun observeFiltered(
+        from: Long,
+        to: Long,
+        type: String?,
+        accountId: Long?,
+        categoryId: Long?,
+        tagId: Long?,
+        minAmount: Long?,
+        maxAmount: Long?,
+    ): Flow<List<TransactionEntity>>
+
+    @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC LIMIT :limit")
+    abstract fun observeLatest(limit: Int): Flow<List<TransactionEntity>>
+
     @Query("SELECT * FROM transactions WHERE accountId = :accountId OR toAccountId = :accountId ORDER BY date DESC, id DESC")
     abstract fun observeForAccount(accountId: Long): Flow<List<TransactionEntity>>
 
@@ -68,6 +94,27 @@ abstract class TransactionDao {
 
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'INCOME' AND date >= :from AND date < :to")
     abstract suspend fun totalIncome(from: Long, to: Long): Long
+
+    @Query(
+        "SELECT COALESCE(SUM(amount), 0) FROM (" +
+            "SELECT amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
+            "UNION ALL " +
+            "SELECT fee AS amount FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to)",
+    )
+    abstract fun observeTotalExpense(from: Long, to: Long): Flow<Long>
+
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'INCOME' AND date >= :from AND date < :to")
+    abstract fun observeTotalIncome(from: Long, to: Long): Flow<Long>
+
+    @Query(
+        "SELECT categoryId, SUM(amount) AS total FROM (" +
+            "SELECT categoryId, amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
+            "UNION ALL " +
+            "SELECT (SELECT id FROM categories WHERE systemKey = 'COMMISSIONS') AS categoryId, fee AS amount " +
+            "FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to) " +
+            "GROUP BY categoryId ORDER BY total DESC",
+    )
+    abstract fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotalRow>>
 
     @Query(
         "SELECT categoryId, SUM(amount) AS total FROM (" +

@@ -21,6 +21,11 @@ class FakeSettings : SettingsRepository {
     override val onboardingCompleted: Flow<Boolean> = completed
     val showTypes = MutableStateFlow(true)
     override val showAccountTypes: Flow<Boolean> = showTypes
+    val lastAccount = MutableStateFlow<Long?>(null)
+    override val lastAccountId: Flow<Long?> = lastAccount
+    override suspend fun setLastAccountId(id: Long) {
+        lastAccount.value = id
+    }
     override suspend fun setShowAccountTypes(show: Boolean) {
         showTypes.value = show
     }

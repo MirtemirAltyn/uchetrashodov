@@ -9,11 +9,18 @@ object Routes {
     const val ACCOUNT_EDIT = "account_edit?id={id}"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
+    const val OPERATION_EDIT = "operation_edit?id={id}&type={type}&copyFrom={copyFrom}"
+    const val DEBT = "debt/{id}"
+    const val DEBT_EDIT = "debt_edit?contactId={contactId}"
+    const val DEBT_EDIT_NEW = "debt_edit"
     const val CATEGORY_EDIT = "category_edit?id={id}&kind={kind}&parentId={parentId}"
 
     const val NONE = -1L
 
     fun account(id: Long) = "account/$id"
+    fun debt(id: Long) = "debt/$id"
+    fun operationEdit(id: Long? = null, type: com.moifinansy.domain.model.TransactionType = com.moifinansy.domain.model.TransactionType.EXPENSE, copyFrom: Long? = null) =
+        "operation_edit?id=${id ?: NONE}&type=${type.name}&copyFrom=${copyFrom ?: NONE}"
     fun accountEdit(id: Long? = null) = "account_edit?id=${id ?: NONE}"
     fun categoryEdit(id: Long? = null, kind: CategoryKind = CategoryKind.EXPENSE, parentId: Long? = null) =
         "category_edit?id=${id ?: NONE}&kind=${kind.name}&parentId=${parentId ?: NONE}"
