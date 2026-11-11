@@ -50,6 +50,13 @@ class AppSmokeTest {
         }
     }
 
+    /** Ввод в поле с подписью [label]; ждёт, пока экран загрузит поля. */
+    private fun input(label: String, text: String) {
+        val field = hasSetTextAction() and hasText(label, substring = true)
+        compose.waitUntilAtLeastOneExists(field, 10_000)
+        compose.onNode(field).performTextReplacement(text)
+    }
+
     private fun click(text: String) = compose.onNodeWithText(text).performClick()
 
     @Test
@@ -59,7 +66,7 @@ class AppSmokeTest {
         shot("01_onboarding_currency")
         click("Далее")
         waitForText("Первый счёт")
-        compose.onNode(hasSetTextAction() and hasText("Начальный баланс", substring = true)).performTextReplacement("12500")
+        input("Начальный баланс", "12500")
         shot("02_onboarding_account")
         click("Начать")
 
@@ -67,8 +74,7 @@ class AppSmokeTest {
         waitForText("Общий баланс")
         compose.onNode(hasContentDescription("Добавить")).performClick()
         waitForText("Новая операция")
-        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Сумма", substring = true), 10_000)
-        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("120+35")
+        input("Сумма", "120+35")
         waitForText("= " + MoneyFormat.format(15_500, "KGS"))
         click("Продукты")
         shot("02b_operation_edit")
@@ -126,7 +132,7 @@ class AppSmokeTest {
         waitForText("Корректировка баланса")
         click("Корректировка баланса")
         waitForText("Фактический баланс")
-        compose.onNode(hasSetTextAction() and hasText("Фактический баланс", substring = true)).performTextReplacement("10000")
+        input("Фактический баланс", "10000")
         shot("05a_account_adjust")
         click("Применить")
         waitForText(MoneyFormat.format(-234_500, "KGS", signed = true))
@@ -138,8 +144,8 @@ class AppSmokeTest {
         waitForText("Всего на счетах")
         compose.onNode(hasContentDescription("Добавить счёт")).performClick()
         waitForText("Новый счёт")
-        compose.onNode(hasSetTextAction() and hasText("Название", substring = true)).performTextReplacement("Карта Мбанк")
-        compose.onNode(hasSetTextAction() and hasText("Начальный баланс", substring = true)).performTextReplacement("5000,50")
+        input("Название", "Карта Мбанк")
+        input("Начальный баланс", "5000,50")
         shot("06_account_edit")
         compose.onNodeWithText("Сохранить").performScrollTo().performClick()
         waitForText("Всего на счетах")
@@ -160,8 +166,7 @@ class AppSmokeTest {
         waitForText("Бюджеты")
         click("Бюджеты")
         compose.onNode(hasContentDescription("Добавить бюджет")).performClick()
-        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Лимит на месяц", substring = true), 10_000)
-        compose.onNode(hasSetTextAction() and hasText("Лимит на месяц", substring = true)).performTextReplacement("100")
+        input("Лимит на месяц", "100")
         click("Сохранить")
         waitForText("155 %")
         waitForText("Перерасход " + MoneyFormat.format(5_500, "KGS"))
@@ -209,14 +214,13 @@ class AppSmokeTest {
         waitForText("Записать долг")
         click("Записать долг")
         waitForText("Новый долг")
-        compose.waitUntilAtLeastOneExists(hasSetTextAction() and hasText("Имя", substring = true), 10_000)
-        compose.onNode(hasSetTextAction() and hasText("Имя", substring = true)).performTextReplacement("Азамат Токтогулов")
-        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("14000")
+        input("Имя", "Азамат Токтогулов")
+        input("Сумма", "14000")
         shot("12_debt_edit")
         compose.onNodeWithText("Сохранить").performScrollTo().performClick()
         waitForText("Осталось".let { "История движений" })
         click("Погасить")
-        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextReplacement("4000")
+        input("Сумма", "4000")
         click("Провести")
         waitForText("Возвращено " + MoneyFormat.formatNumber(400_000) + "\u00A0сом из " + MoneyFormat.formatNumber(1_400_000) + "\u00A0сом")
         shot("13_debt_detail")

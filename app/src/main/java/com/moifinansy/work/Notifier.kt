@@ -19,7 +19,7 @@ import javax.inject.Singleton
 
 /** Показ системных уведомлений одного канала «Напоминания». */
 @Singleton
-class Notifier @Inject constructor(@ApplicationContext private val context: Context) {
+class Notifier @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     fun ensureChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
