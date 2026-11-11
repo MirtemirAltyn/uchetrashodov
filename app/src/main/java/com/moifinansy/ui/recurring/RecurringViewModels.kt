@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,16 +34,27 @@ import javax.inject.Inject
 
 data class RecurringItem(val rule: RecurringRule, val account: Account?, val toAccount: Account?, val category: Category?, val due: Boolean)
 
-data class RecurringListState(val loading: Boolean = true, val items: List<RecurringItem> = emptyList())
+data class SuggestionItem(val suggestion: com.moifinansy.domain.recurring.RecurringSuggestion, val category: Category?, val account: Account?)
+
+data class RecurringListState(
+    val loading: Boolean = true,
+    val items: List<RecurringItem> = emptyList(),
+    val suggestions: List<SuggestionItem> = emptyList(),
+)
 
 @HiltViewModel
 class RecurringViewModel @Inject constructor(
     private val recurring: RecurringRepository,
     accounts: AccountRepository,
     categories: CategoryRepository,
+    transactions: com.moifinansy.domain.repository.TransactionRepository,
+    private val settings: com.moifinansy.domain.settings.SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
-    val state: StateFlow<RecurringListState> = combine(
+    /** Отклонённые подсказки этого сеанса (в настройки пишутся тоже — чтобы не показывать снова). */
+    private val dismissedNow = MutableStateFlow(emptySet<String>())
+
+    private val listState = combine(
         recurring.observeAll(),
         accounts.observeAccounts(includeArchived = true),
         categories.observe(CategoryKind.EXPENSE, includeArchived = true),
@@ -57,7 +69,46 @@ class RecurringViewModel @Inject constructor(
                 RecurringItem(r, a[r.accountId], r.toAccountId?.let { a[it] }, r.categoryId?.let { c[it] }, r.nextDate <= now && (r.endDate == null || r.nextDate <= r.endDate!!))
             },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecurringListState())
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val state: StateFlow<RecurringListState> = combine(
+        listState,
+        transactions.observeFiltered(com.moifinansy.domain.model.OperationFilter(clock.millis() - 120L * 86_400_000, Long.MAX_VALUE)),
+        recurring.observeAll(),
+        dismissedNow,
+        combine(accounts.observeAccounts(includeArchived = true), categories.observe(CategoryKind.EXPENSE, true), categories.observe(CategoryKind.INCOME, true)) { a, e, i ->
+            a.associate { it.account.id to it.account } to (e + i).associateBy { it.id }
+        },
+    ) { list, txs, rules, dismissed, dicts -> Triple(list, com.moifinansy.domain.recurring.RecurringDetector.detect(txs, rules, dismissed, clock.millis(), clock.zone), dicts) }
+        .mapLatest { (list, found, dicts) ->
+            val visible = found.filterNot { settings.wasNotified(SUGGEST_PREFIX + it.key) }
+            list.copy(suggestions = visible.map { SuggestionItem(it, dicts.second[it.categoryId], dicts.first[it.accountId]) })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecurringListState())
+
+    /** Добавить подсказку как регулярный платёж «с подтверждением» (его можно потом изменить). */
+    fun accept(s: com.moifinansy.domain.recurring.RecurringSuggestion) {
+        viewModelScope.launch {
+            recurring.save(
+                RecurringRule(
+                    type = s.type, amount = s.amount, accountId = s.accountId, categoryId = s.categoryId,
+                    frequency = RecurrenceFrequency.MONTH, interval = 1, nextDate = s.nextDate, mode = RecurringMode.REMIND,
+                ),
+            )
+        }
+    }
+
+    fun dismiss(s: com.moifinansy.domain.recurring.RecurringSuggestion) {
+        viewModelScope.launch {
+            settings.markNotified(SUGGEST_PREFIX + s.key)
+            dismissedNow.value = dismissedNow.value + s.key
+        }
+    }
+
+    private companion object {
+        const val SUGGEST_PREFIX = "suggest-"
+    }
 
     fun post(item: RecurringItem) {
         viewModelScope.launch { recurring.post(item.rule.id, item.rule.nextDate) }

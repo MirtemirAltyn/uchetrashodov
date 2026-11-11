@@ -410,4 +410,9 @@
     <string name="settings_section_debts">Долги</string>
     <string name="settings_debts_affect">Новые долги влияют на баланс</string>
     <string name="settings_debts_affect_hint">Какой вариант выбран сразу при записи долга. Его всегда можно поменять в форме и в карточке долга.</string>
+
+    <string name="suggest_title">Похоже на регулярный платёж</string>
+    <string name="suggest_text">%1$s · %2$s · каждый месяц около %3$d-го (уже %4$d мес. подряд)</string>
+    <string name="suggest_add">Добавить</string>
+    <string name="suggest_dismiss">Не надо</string>
 </resources>

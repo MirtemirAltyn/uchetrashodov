@@ -88,7 +88,34 @@ fun RecurringScreen(onBack: () -> Unit, onOpen: (Long?) -> Unit, viewModel: Recu
             contentPadding = PaddingValues(horizontal = Spacing.screenHorizontal, vertical = Spacing.grid),
             verticalArrangement = Arrangement.spacedBy(Spacing.grid),
         ) {
-            if (!state.loading && state.items.isEmpty()) {
+            items(state.suggestions, key = { "s" + it.suggestion.key }) { item ->
+                val sug = item.suggestion
+                Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.primaryContainer) {
+                    Column(Modifier.padding(Spacing.screenHorizontal), verticalArrangement = Arrangement.spacedBy(Spacing.grid)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.grid * 1.5f)) {
+                            IconBadge(item.category?.icon ?: "more_horiz", item.category?.color ?: 0xFF5B5BD6)
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.suggest_title), style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    stringResource(
+                                        R.string.suggest_text,
+                                        item.category?.name.orEmpty(),
+                                        MoneyFormat.format(sug.amount, item.account?.currencyCode ?: "KGS"),
+                                        sug.dayOfMonth,
+                                        sug.months,
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.grid)) {
+                            Button(onClick = { viewModel.accept(sug) }) { Text(stringResource(R.string.suggest_add)) }
+                            OutlinedButton(onClick = { viewModel.dismiss(sug) }) { Text(stringResource(R.string.suggest_dismiss)) }
+                        }
+                    }
+                }
+            }
+            if (!state.loading && state.items.isEmpty() && state.suggestions.isEmpty()) {
                 item { Text(stringResource(R.string.recurring_empty), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = Spacing.grid * 3)) }
             }
             items(state.items, key = { it.rule.id }) { item ->
