@@ -56,6 +56,9 @@ abstract class TransactionDao {
     @Query("SELECT * FROM transactions WHERE accountId = :accountId OR toAccountId = :accountId ORDER BY date DESC, id DESC")
     abstract fun observeForAccount(accountId: Long): Flow<List<TransactionEntity>>
 
+    @Query("SELECT tt.transactionId AS transactionId, t.name AS name FROM transaction_tags tt JOIN tags t ON t.id = tt.tagId ORDER BY t.name")
+    abstract suspend fun allTagNames(): List<com.moifinansy.data.local.entity.TagNameRow>
+
     @Query("SELECT tagId FROM transaction_tags WHERE transactionId = :transactionId ORDER BY tagId")
     abstract suspend fun tagIdsOf(transactionId: Long): List<Long>
 
@@ -93,54 +96,41 @@ abstract class TransactionDao {
     }
 
     // Отчёты: только EXPENSE и INCOME; комиссия перевода считается расходом в категории «Комиссии».
-    // Долги, переводы и корректировки в отчёты не попадают.
+    // Долги, переводы и корректировки в отчёты не попадают. Суммы переводятся в основную валюту :base
+    // по курсу валюты счёта (null — без пересчёта; нет курса — сумма не учитывается).
 
-    @Query(
-        "SELECT COALESCE(SUM(amount), 0) FROM (" +
-            "SELECT amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
-            "UNION ALL " +
-            "SELECT fee AS amount FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to)",
-    )
-    abstract suspend fun totalExpense(from: Long, to: Long): Long
+    @Query("SELECT COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount WHEN type = 'TRANSFER' THEN fee ELSE 0 END), 0) FROM $SRC")
+    abstract suspend fun totalExpense(from: Long, to: Long, base: String?): Long
 
-    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'INCOME' AND date >= :from AND date < :to")
-    abstract suspend fun totalIncome(from: Long, to: Long): Long
+    @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM $SRC")
+    abstract suspend fun totalIncome(from: Long, to: Long, base: String?): Long
 
-    @Query(
-        "SELECT COALESCE(SUM(amount), 0) FROM (" +
-            "SELECT amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
-            "UNION ALL " +
-            "SELECT fee AS amount FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to)",
-    )
-    abstract fun observeTotalExpense(from: Long, to: Long): Flow<Long>
+    @Query("SELECT COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount WHEN type = 'TRANSFER' THEN fee ELSE 0 END), 0) FROM $SRC")
+    abstract fun observeTotalExpense(from: Long, to: Long, base: String?): Flow<Long>
 
-    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'INCOME' AND date >= :from AND date < :to")
-    abstract fun observeTotalIncome(from: Long, to: Long): Flow<Long>
+    @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM $SRC")
+    abstract fun observeTotalIncome(from: Long, to: Long, base: String?): Flow<Long>
 
-    @Query(
-        "SELECT categoryId, SUM(amount) AS total FROM (" +
-            "SELECT categoryId, amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
-            "UNION ALL " +
-            "SELECT (SELECT id FROM categories WHERE systemKey = 'COMMISSIONS') AS categoryId, fee AS amount " +
-            "FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to) " +
-            "GROUP BY categoryId ORDER BY total DESC",
-    )
-    abstract fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotalRow>>
+    @Query(EXPENSE_BY_CATEGORY)
+    abstract fun observeExpenseByCategory(from: Long, to: Long, base: String?): Flow<List<CategoryTotalRow>>
 
-    @Query(
-        "SELECT categoryId, SUM(amount) AS total FROM transactions " +
-            "WHERE type = 'INCOME' AND date >= :from AND date < :to GROUP BY categoryId ORDER BY total DESC",
-    )
-    abstract fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotalRow>>
+    @Query(INCOME_BY_CATEGORY)
+    abstract fun observeIncomeByCategory(from: Long, to: Long, base: String?): Flow<List<CategoryTotalRow>>
+
+    @Query(EXPENSE_BY_CATEGORY)
+    abstract suspend fun expenseByCategory(from: Long, to: Long, base: String?): List<CategoryTotalRow>
+
+    @Query(INCOME_BY_CATEGORY)
+    abstract suspend fun incomeByCategory(from: Long, to: Long, base: String?): List<CategoryTotalRow>
 
     /** Помесячные суммы категории вместе с подкатегориями. */
     @Query(
-        "SELECT strftime('%Y-%m', date / 1000, 'unixepoch', 'localtime') AS month, SUM(amount) AS total " +
-            "FROM transactions WHERE type IN ('EXPENSE', 'INCOME') AND date >= :from AND date < :to " +
+        "SELECT strftime('%Y-%m', date / 1000, 'unixepoch', 'localtime') AS month, SUM(amount) AS total FROM $SRC " +
+            "WHERE type IN ('EXPENSE', 'INCOME') " +
             "AND (categoryId = :categoryId OR categoryId IN (SELECT id FROM categories WHERE parentId = :categoryId)) " +
             "GROUP BY month ORDER BY month",
     )
-    abstract fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<List<com.moifinansy.data.local.entity.MonthAmountRow>>
+    abstract fun observeCategoryMonths(categoryId: Long, from: Long, to: Long, base: String?): Flow<List<com.moifinansy.data.local.entity.MonthAmountRow>>
 
     /** Помесячные итоги; месяц — по местному времени устройства. */
     @Query(
@@ -148,23 +138,31 @@ abstract class TransactionDao {
             "COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) AS income, " +
             "COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount WHEN type = 'TRANSFER' THEN fee ELSE 0 END), 0) AS expense, " +
             "COALESCE(SUM(CASE type WHEN 'INCOME' THEN amount WHEN 'EXPENSE' THEN -amount WHEN 'TRANSFER' THEN -fee ELSE amount END), 0) AS net " +
-            "FROM transactions WHERE date >= :from AND date < :to GROUP BY month ORDER BY month",
+            "FROM $SRC GROUP BY month ORDER BY month",
     )
-    abstract fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.data.local.entity.MonthTotalsRow>>
+    abstract fun observeMonthTotals(from: Long, to: Long, base: String?): Flow<List<com.moifinansy.data.local.entity.MonthTotalsRow>>
 
-    @Query(
-        "SELECT categoryId, SUM(amount) AS total FROM (" +
-            "SELECT categoryId, amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
-            "UNION ALL " +
-            "SELECT (SELECT id FROM categories WHERE systemKey = 'COMMISSIONS') AS categoryId, fee AS amount " +
-            "FROM transactions WHERE type = 'TRANSFER' AND fee > 0 AND date >= :from AND date < :to) " +
-            "GROUP BY categoryId ORDER BY total DESC",
-    )
-    abstract suspend fun expenseByCategory(from: Long, to: Long): List<CategoryTotalRow>
+    companion object {
+        /** Множитель пересчёта валюты счёта `a` в основную (× 1 000 000). */
+        const val RATE = "(CASE WHEN :base IS NULL OR a.currencyCode = :base THEN 1000000 ELSE COALESCE(r.rateToBaseMicros, 0) END)"
 
-    @Query(
-        "SELECT categoryId, SUM(amount) AS total FROM transactions " +
-            "WHERE type = 'INCOME' AND date >= :from AND date < :to GROUP BY categoryId ORDER BY total DESC",
-    )
-    abstract suspend fun incomeByCategory(from: Long, to: Long): List<CategoryTotalRow>
+        /** Операции периода с суммами в основной валюте. */
+        const val SRC =
+            "(SELECT t.type AS type, t.categoryId AS categoryId, t.date AS date, " +
+                "t.amount * $RATE / 1000000 AS amount, t.fee * $RATE / 1000000 AS fee " +
+                "FROM transactions t JOIN accounts a ON a.id = t.accountId " +
+                "LEFT JOIN currency_rates r ON r.code = a.currencyCode " +
+                "WHERE t.date >= :from AND t.date < :to)"
+
+        const val EXPENSE_BY_CATEGORY =
+            "SELECT categoryId, SUM(amount) AS total FROM (" +
+                "SELECT categoryId, amount FROM $SRC WHERE type = 'EXPENSE' " +
+                "UNION ALL " +
+                "SELECT (SELECT id FROM categories WHERE systemKey = 'COMMISSIONS') AS categoryId, fee AS amount " +
+                "FROM $SRC WHERE type = 'TRANSFER' AND fee > 0) " +
+                "GROUP BY categoryId ORDER BY total DESC"
+
+        const val INCOME_BY_CATEGORY =
+            "SELECT categoryId, SUM(amount) AS total FROM $SRC WHERE type = 'INCOME' GROUP BY categoryId ORDER BY total DESC"
+    }
 }

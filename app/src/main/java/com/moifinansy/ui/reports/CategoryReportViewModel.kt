@@ -70,7 +70,7 @@ class CategoryReportViewModel @Inject constructor(
             val windowFrom = window.first().atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
             val windowTo = endMonth.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
             val byCategory = { from: Long, to: Long ->
-                if (kind == CategoryKind.EXPENSE) transactions.observeExpenseByCategory(from, to) else transactions.observeIncomeByCategory(from, to)
+                if (kind == CategoryKind.EXPENSE) transactions.observeExpenseByCategory(from, to, base) else transactions.observeIncomeByCategory(from, to, base)
             }
             val type = if (kind == CategoryKind.EXPENSE) TransactionType.EXPENSE else TransactionType.INCOME
             val dict = combine(categories.observe(kind, includeArchived = true), accounts.observeAccounts(includeArchived = true)) { c, a -> c to a }
@@ -78,7 +78,7 @@ class CategoryReportViewModel @Inject constructor(
                 dict,
                 byCategory(range.from, range.to),
                 byCategory(prev.from, prev.to),
-                transactions.observeCategoryMonths(categoryId, windowFrom, windowTo),
+                transactions.observeCategoryMonths(categoryId, windowFrom, windowTo, base),
                 transactions.observeFiltered(OperationFilter(range.from, range.to, type = type, categoryId = categoryId)),
             ) { (cats, accs), rows, prevRows, months, ops ->
                 val byId = cats.associateBy { it.id }

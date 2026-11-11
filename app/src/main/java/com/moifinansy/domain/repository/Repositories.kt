@@ -23,8 +23,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface AccountRepository {
     fun observeAccounts(includeArchived: Boolean = false): Flow<List<AccountWithBalance>>
-    /** Общий баланс счетов с «учитывать в общем балансе» в одной валюте. */
+    /** Общий баланс счетов «учитывать в общем балансе» в основной валюте (другие валюты — по курсу). */
     fun observeTotal(currencyCode: String): Flow<Long>
+    fun observeCurrenciesWithoutRate(base: String): Flow<List<String>>
+    fun observeUsedCurrencies(): Flow<List<String>>
     suspend fun get(id: Long): Account?
     suspend fun balanceOf(accountId: Long): Long
     suspend fun create(account: Account): Long
@@ -57,13 +59,13 @@ interface TransactionRepository {
     fun observeForAccount(accountId: Long): Flow<List<Transaction>>
     fun observeFiltered(filter: com.moifinansy.domain.model.OperationFilter): Flow<List<Transaction>>
     fun observeLatest(limit: Int): Flow<List<Transaction>>
-    fun observeTotalExpense(from: Long, to: Long): Flow<Long>
-    fun observeTotalIncome(from: Long, to: Long): Flow<Long>
+    fun observeTotalExpense(from: Long, to: Long, base: String? = null): Flow<Long>
+    fun observeTotalIncome(from: Long, to: Long, base: String? = null): Flow<Long>
     /** Расходы по категориям (по самим категориям операций, без свёртки в родителя). */
-    fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotal>>
-    fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotal>>
-    fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<Map<java.time.YearMonth, Long>>
-    fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.domain.model.MonthTotals>>
+    fun observeExpenseByCategory(from: Long, to: Long, base: String? = null): Flow<List<CategoryTotal>>
+    fun observeIncomeByCategory(from: Long, to: Long, base: String? = null): Flow<List<CategoryTotal>>
+    fun observeCategoryMonths(categoryId: Long, from: Long, to: Long, base: String? = null): Flow<Map<java.time.YearMonth, Long>>
+    fun observeMonthTotals(from: Long, to: Long, base: String? = null): Flow<List<com.moifinansy.domain.model.MonthTotals>>
     suspend fun get(id: Long): Transaction?
     /** Создаёт (id == 0) или обновляет операцию вместе с тегами. Возвращает id. */
     suspend fun save(transaction: Transaction, tagIds: List<Long> = emptyList()): Long
@@ -71,11 +73,13 @@ interface TransactionRepository {
     /** Корректировка: создаёт ADJUSTMENT на разницу между фактическим и расчётным балансом. null — разницы нет. */
     suspend fun adjustBalance(accountId: Long, actualBalance: Long, date: Long): Long?
     suspend fun tagIdsOf(transactionId: Long): List<Long>
+    /** Названия тегов всех операций (для экспорта). */
+    suspend fun tagNamesByTransaction(): Map<Long, List<String>>
 
-    suspend fun totalExpense(from: Long, to: Long): Long
-    suspend fun totalIncome(from: Long, to: Long): Long
-    suspend fun expenseByCategory(from: Long, to: Long): List<CategoryTotal>
-    suspend fun incomeByCategory(from: Long, to: Long): List<CategoryTotal>
+    suspend fun totalExpense(from: Long, to: Long, base: String? = null): Long
+    suspend fun totalIncome(from: Long, to: Long, base: String? = null): Long
+    suspend fun expenseByCategory(from: Long, to: Long, base: String? = null): List<CategoryTotal>
+    suspend fun incomeByCategory(from: Long, to: Long, base: String? = null): List<CategoryTotal>
 }
 
 interface DebtRepository {
@@ -128,4 +132,6 @@ interface RecurringRepository {
 interface CurrencyRateRepository {
     fun observeAll(): Flow<List<CurrencyRate>>
     suspend fun save(rate: CurrencyRate)
+    suspend fun delete(code: String)
+    suspend fun deleteAll()
 }

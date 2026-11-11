@@ -158,7 +158,15 @@ class AppSmokeTest {
         waitForText("Настройки")
         click("Настройки")
         waitForText("Типы счетов")
-        click("Типы счетов")
+        compose.onNode(hasText("Типы счетов")).performScrollTo().performClick()
+        // PIN-код: придумать и повторить.
+        compose.onNode(hasText("Вход по PIN-коду")).performScrollTo().performClick()
+        waitForText("Придумайте PIN из 4 цифр")
+        shot("07a_pin")
+        "1234".forEach { click(it.toString()) }
+        waitForText("Повторите PIN")
+        "1234".forEach { click(it.toString()) }
+        waitForText("Отпечаток или лицо")
         shot("07b_settings")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
 

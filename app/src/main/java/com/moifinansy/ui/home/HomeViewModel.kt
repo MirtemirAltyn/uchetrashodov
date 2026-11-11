@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.YearMonth
 import javax.inject.Inject
@@ -47,6 +48,7 @@ data class HomeState(
     val debtTotals: DebtTotals = DebtTotals(0, 0),
     val dueSoon: List<DueDebt> = emptyList(),
     val latest: List<OperationItem> = emptyList(),
+    val hideAmounts: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,9 +62,12 @@ class HomeViewModel @Inject constructor(
     private val clock: Clock,
 ) : ViewModel() {
 
+    private val settingsRepo = settings
+
     val state: StateFlow<HomeState> = settings.baseCurrency
         .map { it ?: Currencies.DEFAULT }
         .flatMapLatest { base -> homeFlow(base) }
+        .combine(settings.hideAmounts) { s, hide -> s.copy(hideAmounts = hide) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState())
 
     private fun homeFlow(base: String): Flow<HomeState> {
@@ -76,9 +81,9 @@ class HomeViewModel @Inject constructor(
         val money = combine(
             accounts.observeAccounts(),
             accounts.observeTotal(base),
-            transactions.observeTotalIncome(range.from, range.to),
-            transactions.observeTotalExpense(range.from, range.to),
-            transactions.observeExpenseByCategory(range.from, range.to),
+            transactions.observeTotalIncome(range.from, range.to, base),
+            transactions.observeTotalExpense(range.from, range.to, base),
+            transactions.observeExpenseByCategory(range.from, range.to, base),
         ) { accountList, total, income, expense, byCategory -> Money(accountList, total, income, expense, byCategory) }
 
         val debtInfo = combine(debts.observeTotals(base), debts.observeDebts(), debts.observeContacts()) { totals, list, contacts ->
@@ -100,6 +105,10 @@ class HomeViewModel @Inject constructor(
                 latest = OperationItem.build(latest, (m.accounts).associateBy { it.account.id }, cats),
             )
         }
+    }
+
+    fun toggleHideAmounts() {
+        viewModelScope.launch { settingsRepo.setHideAmounts(!state.value.hideAmounts) }
     }
 
     private data class Money(

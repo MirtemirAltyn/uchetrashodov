@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -47,13 +49,15 @@ class BudgetsViewModel @Inject constructor(
     private val month = YearMonth.now(clock)
     private val range = Periods.month(month, clock.zone)
 
-    val state: StateFlow<BudgetsState> = combine(
-        budgets.observeAll(),
-        transactions.observeExpenseByCategory(range.from, range.to),
-        categories.observe(CategoryKind.EXPENSE, includeArchived = true),
-        settings.baseCurrency,
-    ) { list, rows, cats, base ->
-        BudgetsState(false, month, base ?: Currencies.DEFAULT, BudgetStatus.compute(list, rows, cats.associateBy { it.id }))
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val state: StateFlow<BudgetsState> = settings.baseCurrency.map { it ?: Currencies.DEFAULT }.flatMapLatest { base ->
+        combine(
+            budgets.observeAll(),
+            transactions.observeExpenseByCategory(range.from, range.to, base),
+            categories.observe(CategoryKind.EXPENSE, includeArchived = true),
+        ) { list, rows, cats ->
+            BudgetsState(false, month, base, BudgetStatus.compute(list, rows, cats.associateBy { it.id }))
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BudgetsState())
 }
 

@@ -67,6 +67,12 @@ interface CurrencyRateDao {
     @Query("SELECT * FROM currency_rates WHERE code = :code")
     suspend fun get(code: String): CurrencyRateEntity?
 
+    @Query("DELETE FROM currency_rates WHERE code = :code")
+    suspend fun delete(code: String)
+
+    @Query("DELETE FROM currency_rates")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM currency_rates ORDER BY code")
     fun observeAll(): Flow<List<CurrencyRateEntity>>
 }

@@ -72,9 +72,9 @@ abstract class DebtDao {
 
     @Query(
         "SELECT " +
-            "COALESCE(SUM(CASE WHEN d.direction = 'I_OWE' THEN $REMAINING_SQL ELSE 0 END), 0) AS iOwe, " +
-            "COALESCE(SUM(CASE WHEN d.direction = 'OWED_TO_ME' THEN $REMAINING_SQL ELSE 0 END), 0) AS owedToMe " +
-            "FROM debts d WHERE d.status = 'ACTIVE' AND d.currencyCode = :currencyCode",
+            "COALESCE(SUM(CASE WHEN d.direction = 'I_OWE' THEN $REMAINING_SQL * $DEBT_RATE / 1000000 ELSE 0 END), 0) AS iOwe, " +
+            "COALESCE(SUM(CASE WHEN d.direction = 'OWED_TO_ME' THEN $REMAINING_SQL * $DEBT_RATE / 1000000 ELSE 0 END), 0) AS owedToMe " +
+            "FROM debts d WHERE d.status = 'ACTIVE'",
     )
     abstract fun observeTotals(currencyCode: String): Flow<DebtTotalsRow>
 
@@ -184,6 +184,11 @@ abstract class DebtDao {
         const val REMAINING_SQL =
             "(SELECT COALESCE(SUM(CASE WHEN p.kind IN ('INITIAL', 'INCREASE') THEN p.amount ELSE -p.amount END), 0)" +
                 " FROM debt_payments p WHERE p.debtId = d.id)"
+
+        /** Курс валюты долга `d` к основной :currencyCode (× 1 000 000); нет курса — 0. */
+        const val DEBT_RATE =
+            "(CASE WHEN d.currencyCode = :currencyCode THEN 1000000 " +
+                "ELSE COALESCE((SELECT r.rateToBaseMicros FROM currency_rates r WHERE r.code = d.currencyCode), 0) END)"
 
         const val TOTAL_SQL =
             "(SELECT COALESCE(SUM(CASE WHEN p.kind IN ('INITIAL', 'INCREASE') THEN p.amount ELSE 0 END), 0)" +

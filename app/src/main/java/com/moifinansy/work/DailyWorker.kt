@@ -62,11 +62,11 @@ class DailyWorker @AssistedInject constructor(
         val month = YearMonth.now(clock)
         val range = Periods.month(month, clock.zone)
         val cats = categories.observe(CategoryKind.EXPENSE, includeArchived = true).first().associateBy { it.id }
-        val statuses = BudgetStatus.compute(budgets.observeAll().first(), transactions.expenseByCategory(range.from, range.to), cats)
+        val base = settings.baseCurrency.first() ?: Currencies.DEFAULT
+        val statuses = BudgetStatus.compute(budgets.observeAll().first(), transactions.expenseByCategory(range.from, range.to, base), cats)
         reminders += ReminderPlanner.budgets(statuses, month)
 
         val contacts = debts.observeContacts().first().associate { it.id to it.name }
-        val base = settings.baseCurrency.first() ?: Currencies.DEFAULT
         for (r in reminders) {
             if (settings.wasNotified(r.key)) continue
             val (title, text) = describe(r, contacts, base)

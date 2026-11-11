@@ -1,35 +1,67 @@
 package com.moifinansy
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.moifinansy.core.ui.theme.MoiFinansyTheme
+import com.moifinansy.domain.settings.SettingsRepository
+import com.moifinansy.domain.settings.ThemeMode
 import com.moifinansy.ui.AppState
 import com.moifinansy.ui.MainViewModel
+import com.moifinansy.ui.lock.LockManager
+import com.moifinansy.ui.lock.LockScreen
 import com.moifinansy.ui.navigation.MoiFinansyNavHost
 import com.moifinansy.ui.onboarding.OnboardingScreen
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+/** FragmentActivity — для системного окна биометрии. */
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+    @Inject lateinit var lockManager: LockManager
+    @Inject lateinit var settings: SettingsRepository
+
+    private val processObserver = object : DefaultLifecycleObserver {
+        override fun onStart(owner: LifecycleOwner) {
+            lifecycleScope.launch { lockManager.onForeground() }
+        }
+
+        override fun onStop(owner: LifecycleOwner) = lockManager.onBackground()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            MoiFinansyTheme {
-                AppRoot()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(processObserver)
+        // С PIN-кодом запрещаем скриншоты и показ содержимого в списке недавних приложений.
+        lifecycleScope.launch {
+            settings.security.collect { s ->
+                if (s.pinEnabled) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE) else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
         }
+        setContent { AppRoot() }
+    }
+
+    override fun onDestroy() {
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(processObserver)
+        super.onDestroy()
     }
 }
 
@@ -51,17 +83,27 @@ private fun NotificationPermissionRequest() {
 @Composable
 private fun AppRoot(viewModel: MainViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        when (state) {
-            AppState.LOADING -> Unit
-            AppState.ONBOARDING -> OnboardingScreen()
-            AppState.READY -> {
-                NotificationPermissionRequest()
-                MoiFinansyNavHost()
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
+    val locked by viewModel.locked.collectAsStateWithLifecycle()
+    val dark = when (theme) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    MoiFinansyTheme(darkTheme = dark) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            when (state) {
+                AppState.LOADING -> Unit
+                AppState.ONBOARDING -> OnboardingScreen()
+                AppState.READY -> {
+                    NotificationPermissionRequest()
+                    MoiFinansyNavHost()
+                    if (locked) LockScreen()
+                }
             }
         }
     }

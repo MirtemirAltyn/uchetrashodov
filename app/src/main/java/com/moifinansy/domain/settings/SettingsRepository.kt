@@ -26,6 +26,19 @@ interface SettingsRepository {
     suspend fun wasNotified(key: String): Boolean
     suspend fun markNotified(key: String)
 
+    val theme: Flow<ThemeMode>
+    suspend fun setTheme(mode: ThemeMode)
+
+    /** Скрывать суммы на главном экране. */
+    val hideAmounts: Flow<Boolean>
+    suspend fun setHideAmounts(hide: Boolean)
+
+    val security: Flow<SecuritySettings>
+    /** null — выключить PIN (и биометрию). */
+    suspend fun setPin(hash: String?, salt: String?)
+    suspend fun setBiometric(enabled: Boolean)
+    suspend fun setLockAfterMinutes(minutes: Int)
+
     /** Счёт последней операции — подставляется в новую операцию. */
     val lastAccountId: Flow<Long?>
     suspend fun setLastAccountId(id: Long)

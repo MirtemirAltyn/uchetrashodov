@@ -51,7 +51,13 @@ fun IconBadge(icon: String, color: Long, modifier: Modifier = Modifier, size: Dp
 
 /** Градиентная шапка с итогом (#5B5BD6 → #8E8CF0 по диагонали). */
 @Composable
-fun GradientHeader(title: String, amount: String, modifier: Modifier = Modifier, subtitle: String? = null) {
+fun GradientHeader(
+    title: String,
+    amount: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    action: (@Composable () -> Unit)? = null,
+) {
     val colors = LocalFinanceColors.current
     val onGradient = MaterialTheme.colorScheme.onPrimary
     Column(
@@ -61,8 +67,13 @@ fun GradientHeader(title: String, amount: String, modifier: Modifier = Modifier,
             .background(Brush.linearGradient(listOf(colors.headerGradientStart, colors.headerGradientEnd)))
             .padding(Spacing.grid * 2.5f),
     ) {
-        Text(title, style = MaterialTheme.typography.bodySmall, color = onGradient.copy(alpha = 0.85f))
-        Text(amount, style = MaterialTheme.typography.displaySmall, color = onGradient)
+        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodySmall, color = onGradient.copy(alpha = 0.85f))
+                Text(amount, style = MaterialTheme.typography.displaySmall, color = onGradient)
+            }
+            action?.invoke()
+        }
         if (subtitle != null) {
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = onGradient.copy(alpha = 0.85f))
         }

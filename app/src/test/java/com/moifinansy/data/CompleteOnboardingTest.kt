@@ -36,6 +36,27 @@ class FakeSettings : SettingsRepository {
     override suspend fun markNotified(key: String) {
         notified += key
     }
+    val themeFlow = MutableStateFlow(com.moifinansy.domain.settings.ThemeMode.SYSTEM)
+    override val theme: Flow<com.moifinansy.domain.settings.ThemeMode> = themeFlow
+    override suspend fun setTheme(mode: com.moifinansy.domain.settings.ThemeMode) {
+        themeFlow.value = mode
+    }
+    val hide = MutableStateFlow(false)
+    override val hideAmounts: Flow<Boolean> = hide
+    override suspend fun setHideAmounts(hide: Boolean) {
+        this.hide.value = hide
+    }
+    val sec = MutableStateFlow(com.moifinansy.domain.settings.SecuritySettings())
+    override val security: Flow<com.moifinansy.domain.settings.SecuritySettings> = sec
+    override suspend fun setPin(hash: String?, salt: String?) {
+        sec.value = if (hash == null) com.moifinansy.domain.settings.SecuritySettings() else sec.value.copy(pinHash = hash, pinSalt = salt)
+    }
+    override suspend fun setBiometric(enabled: Boolean) {
+        sec.value = sec.value.copy(biometric = enabled)
+    }
+    override suspend fun setLockAfterMinutes(minutes: Int) {
+        sec.value = sec.value.copy(lockAfterMinutes = minutes)
+    }
     val lastAccount = MutableStateFlow<Long?>(null)
     override val lastAccountId: Flow<Long?> = lastAccount
     override suspend fun setLastAccountId(id: Long) {

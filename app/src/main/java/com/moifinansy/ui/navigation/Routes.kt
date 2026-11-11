@@ -10,6 +10,8 @@ object Routes {
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
     const val BUDGETS = "budgets"
+    const val RATES = "rates"
+    const val PIN_SETUP = "pin_setup"
     const val BUDGET_EDIT = "budget_edit?id={id}"
     const val RECURRING = "recurring"
     const val RECURRING_EDIT = "recurring_edit?id={id}"

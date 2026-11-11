@@ -102,14 +102,14 @@ class ReportsViewModel @Inject constructor(
             categories.observe(CategoryKind.INCOME, includeArchived = true),
         ) { e, i -> (e + i).associateBy { it.id } }
         val current = combine(
-            transactions.observeExpenseByCategory(range.from, range.to),
-            transactions.observeIncomeByCategory(range.from, range.to),
-            transactions.observeTotalIncome(range.from, range.to),
-            transactions.observeTotalExpense(range.from, range.to),
+            transactions.observeExpenseByCategory(range.from, range.to, base),
+            transactions.observeIncomeByCategory(range.from, range.to, base),
+            transactions.observeTotalIncome(range.from, range.to, base),
+            transactions.observeTotalExpense(range.from, range.to, base),
             cats,
         ) { e, i, income, expense, c -> Current(rollUp(e, c), rollUp(i, c), income, expense) }
-        val previous = combine(transactions.observeTotalIncome(prev.from, prev.to), transactions.observeTotalExpense(prev.from, prev.to)) { i, e -> i to e }
-        val dynamics = combine(transactions.observeMonthTotals(windowFrom, Long.MAX_VALUE), accounts.observeTotal(base)) { totals, now ->
+        val previous = combine(transactions.observeTotalIncome(prev.from, prev.to, base), transactions.observeTotalExpense(prev.from, prev.to, base)) { i, e -> i to e }
+        val dynamics = combine(transactions.observeMonthTotals(windowFrom, Long.MAX_VALUE, base), accounts.observeTotal(base)) { totals, now ->
             monthPoints(window, totals, now)
         }
         return combine(current, previous, dynamics) { c, (pi, pe), months ->

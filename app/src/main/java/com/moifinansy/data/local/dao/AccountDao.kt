@@ -41,11 +41,23 @@ interface AccountDao {
     @Query("SELECT $BALANCE_SQL FROM accounts a WHERE a.id = :accountId")
     suspend fun balanceOf(accountId: Long): Long?
 
+    /** Общий баланс в основной валюте: счета в других валютах — по курсу, без курса не учитываются. */
     @Query(
-        "SELECT COALESCE(SUM($BALANCE_SQL), 0) FROM accounts a " +
-            "WHERE a.includeInTotal = 1 AND a.isArchived = 0 AND a.currencyCode = :currencyCode",
+        "SELECT COALESCE(SUM($BALANCE_SQL * (CASE WHEN a.currencyCode = :currencyCode THEN 1000000 " +
+            "ELSE COALESCE((SELECT r.rateToBaseMicros FROM currency_rates r WHERE r.code = a.currencyCode), 0) END) / 1000000), 0) " +
+            "FROM accounts a WHERE a.includeInTotal = 1 AND a.isArchived = 0",
     )
     fun observeTotal(currencyCode: String): Flow<Long>
+
+    /** Валюты счетов (не в архиве), для которых нет курса к основной. */
+    @Query(
+        "SELECT DISTINCT a.currencyCode FROM accounts a WHERE a.isArchived = 0 AND a.currencyCode != :base " +
+            "AND NOT EXISTS (SELECT 1 FROM currency_rates r WHERE r.code = a.currencyCode)",
+    )
+    fun observeCurrenciesWithoutRate(base: String): Flow<List<String>>
+
+    @Query("SELECT DISTINCT currencyCode FROM accounts WHERE isArchived = 0 UNION SELECT DISTINCT currencyCode FROM debts")
+    fun observeUsedCurrencies(): Flow<List<String>>
 
     companion object {
         /**

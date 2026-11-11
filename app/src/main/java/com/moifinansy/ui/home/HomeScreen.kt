@@ -1,6 +1,9 @@
 package com.moifinansy.ui.home
 
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -63,12 +66,24 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(Spacing.grid * 1.5f),
     ) {
         item(key = "total") {
-            GradientHeader(title = stringResource(R.string.home_total), amount = MoneyFormat.format(state.total, state.baseCurrency))
+            GradientHeader(
+                title = stringResource(R.string.home_total),
+                amount = if (state.hideAmounts) stringResource(R.string.hidden_amount) else MoneyFormat.format(state.total, state.baseCurrency),
+                action = {
+                    androidx.compose.material3.IconButton(onClick = viewModel::toggleHideAmounts) {
+                        androidx.compose.material3.Icon(
+                            if (state.hideAmounts) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                            contentDescription = stringResource(if (state.hideAmounts) R.string.show_amounts else R.string.hide_amounts),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                },
+            )
         }
         if (state.accounts.isNotEmpty()) {
             item(key = "accounts") {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.grid)) {
-                    items(state.accounts, key = { it.account.id }) { AccountMiniCard(it, onClick = { onOpenAccount(it.account.id) }) }
+                    items(state.accounts, key = { it.account.id }) { AccountMiniCard(it, state.hideAmounts, onClick = { onOpenAccount(it.account.id) }) }
                 }
             }
         }
@@ -77,11 +92,11 @@ fun HomeScreen(
                 Row(Modifier.padding(horizontal = Spacing.screenHorizontal, vertical = Spacing.grid)) {
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.home_income), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        MoneyText(state.income, state.baseCurrency, signed = true)
+                        if (state.hideAmounts) Text(stringResource(R.string.hidden_amount), style = MaterialTheme.typography.titleMedium) else MoneyText(state.income, state.baseCurrency, signed = true)
                     }
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.home_expense), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        MoneyText(-state.expense, state.baseCurrency, signed = true)
+                        if (state.hideAmounts) Text(stringResource(R.string.hidden_amount), style = MaterialTheme.typography.titleMedium) else MoneyText(-state.expense, state.baseCurrency, signed = true)
                     }
                 }
             }
@@ -176,7 +191,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun AccountMiniCard(item: AccountWithBalance, onClick: () -> Unit) {
+private fun AccountMiniCard(item: AccountWithBalance, hide: Boolean, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.width(156.dp),
@@ -187,7 +202,7 @@ private fun AccountMiniCard(item: AccountWithBalance, onClick: () -> Unit) {
         Column(Modifier.padding(Spacing.grid * 1.5f), verticalArrangement = Arrangement.spacedBy(Spacing.grid / 2)) {
             IconBadge(item.account.icon, item.account.color, size = 32.dp)
             Text(item.account.name, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            MoneyText(item.balance, item.account.currencyCode)
+            if (hide) Text(stringResource(R.string.hidden_amount), style = MaterialTheme.typography.titleMedium) else MoneyText(item.balance, item.account.currencyCode)
         }
     }
 }

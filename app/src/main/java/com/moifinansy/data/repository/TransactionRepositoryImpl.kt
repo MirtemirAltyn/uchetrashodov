@@ -33,19 +33,19 @@ class TransactionRepositoryImpl @Inject constructor(
         ).map { rows -> rows.map { it.toModel() } }
 
     override fun observeLatest(limit: Int): Flow<List<Transaction>> = dao.observeLatest(limit).map { rows -> rows.map { it.toModel() } }
-    override fun observeTotalExpense(from: Long, to: Long): Flow<Long> = dao.observeTotalExpense(from, to)
-    override fun observeTotalIncome(from: Long, to: Long): Flow<Long> = dao.observeTotalIncome(from, to)
-    override fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotal>> =
-        dao.observeExpenseByCategory(from, to).map { rows -> rows.map { it.toModel() } }
+    override fun observeTotalExpense(from: Long, to: Long, base: String?): Flow<Long> = dao.observeTotalExpense(from, to, base)
+    override fun observeTotalIncome(from: Long, to: Long, base: String?): Flow<Long> = dao.observeTotalIncome(from, to, base)
+    override fun observeExpenseByCategory(from: Long, to: Long, base: String?): Flow<List<CategoryTotal>> =
+        dao.observeExpenseByCategory(from, to, base).map { rows -> rows.map { it.toModel() } }
 
-    override fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotal>> =
-        dao.observeIncomeByCategory(from, to).map { rows -> rows.map { it.toModel() } }
+    override fun observeIncomeByCategory(from: Long, to: Long, base: String?): Flow<List<CategoryTotal>> =
+        dao.observeIncomeByCategory(from, to, base).map { rows -> rows.map { it.toModel() } }
 
-    override fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<Map<java.time.YearMonth, Long>> =
-        dao.observeCategoryMonths(categoryId, from, to).map { rows -> rows.associate { java.time.YearMonth.parse(it.month) to it.total } }
+    override fun observeCategoryMonths(categoryId: Long, from: Long, to: Long, base: String?): Flow<Map<java.time.YearMonth, Long>> =
+        dao.observeCategoryMonths(categoryId, from, to, base).map { rows -> rows.associate { java.time.YearMonth.parse(it.month) to it.total } }
 
-    override fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.domain.model.MonthTotals>> =
-        dao.observeMonthTotals(from, to).map { rows ->
+    override fun observeMonthTotals(from: Long, to: Long, base: String?): Flow<List<com.moifinansy.domain.model.MonthTotals>> =
+        dao.observeMonthTotals(from, to, base).map { rows ->
             rows.map { com.moifinansy.domain.model.MonthTotals(java.time.YearMonth.parse(it.month), it.income, it.expense, it.net) }
         }
 
@@ -80,11 +80,13 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun tagIdsOf(transactionId: Long): List<Long> = dao.tagIdsOf(transactionId)
+    override suspend fun tagNamesByTransaction(): Map<Long, List<String>> =
+        dao.allTagNames().groupBy({ it.transactionId }, { it.name })
 
-    override suspend fun totalExpense(from: Long, to: Long): Long = dao.totalExpense(from, to)
-    override suspend fun totalIncome(from: Long, to: Long): Long = dao.totalIncome(from, to)
-    override suspend fun expenseByCategory(from: Long, to: Long): List<CategoryTotal> = dao.expenseByCategory(from, to).map { it.toModel() }
-    override suspend fun incomeByCategory(from: Long, to: Long): List<CategoryTotal> = dao.incomeByCategory(from, to).map { it.toModel() }
+    override suspend fun totalExpense(from: Long, to: Long, base: String?): Long = dao.totalExpense(from, to, base)
+    override suspend fun totalIncome(from: Long, to: Long, base: String?): Long = dao.totalIncome(from, to, base)
+    override suspend fun expenseByCategory(from: Long, to: Long, base: String?): List<CategoryTotal> = dao.expenseByCategory(from, to, base).map { it.toModel() }
+    override suspend fun incomeByCategory(from: Long, to: Long, base: String?): List<CategoryTotal> = dao.incomeByCategory(from, to, base).map { it.toModel() }
 
     private suspend fun validate(t: Transaction) {
         requireNotNull(accountDao.getById(t.accountId)) { "Счёт не найден" }

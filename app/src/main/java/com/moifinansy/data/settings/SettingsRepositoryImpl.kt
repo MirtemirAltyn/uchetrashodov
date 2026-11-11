@@ -50,6 +50,45 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[NOTIFIED] = ((it[NOTIFIED] ?: emptySet()) + key).toList().takeLast(500).toSet() }
     }
 
+    override val theme: Flow<com.moifinansy.domain.settings.ThemeMode> = dataStore.data
+        .map { p -> p[THEME]?.let { runCatching { com.moifinansy.domain.settings.ThemeMode.valueOf(it) }.getOrNull() } ?: com.moifinansy.domain.settings.ThemeMode.SYSTEM }
+        .distinctUntilChanged()
+
+    override suspend fun setTheme(mode: com.moifinansy.domain.settings.ThemeMode) {
+        dataStore.edit { it[THEME] = mode.name }
+    }
+
+    override val hideAmounts: Flow<Boolean> = dataStore.data.map { it[HIDE_AMOUNTS] ?: false }.distinctUntilChanged()
+
+    override suspend fun setHideAmounts(hide: Boolean) {
+        dataStore.edit { it[HIDE_AMOUNTS] = hide }
+    }
+
+    override val security: Flow<com.moifinansy.domain.settings.SecuritySettings> = dataStore.data.map {
+        com.moifinansy.domain.settings.SecuritySettings(it[PIN_HASH], it[PIN_SALT], it[BIOMETRIC] ?: false, it[LOCK_AFTER] ?: 1)
+    }.distinctUntilChanged()
+
+    override suspend fun setPin(hash: String?, salt: String?) {
+        dataStore.edit {
+            if (hash == null || salt == null) {
+                it.remove(PIN_HASH)
+                it.remove(PIN_SALT)
+                it[BIOMETRIC] = false
+            } else {
+                it[PIN_HASH] = hash
+                it[PIN_SALT] = salt
+            }
+        }
+    }
+
+    override suspend fun setBiometric(enabled: Boolean) {
+        dataStore.edit { it[BIOMETRIC] = enabled }
+    }
+
+    override suspend fun setLockAfterMinutes(minutes: Int) {
+        dataStore.edit { it[LOCK_AFTER] = minutes }
+    }
+
     override val lastAccountId: Flow<Long?> = dataStore.data.map { it[LAST_ACCOUNT_ID] }.distinctUntilChanged()
 
     override suspend fun setLastAccountId(id: Long) {
@@ -70,6 +109,12 @@ class SettingsRepositoryImpl @Inject constructor(
         val SHOW_ACCOUNT_TYPES = booleanPreferencesKey("show_account_types")
         val LAST_ACCOUNT_ID = longPreferencesKey("last_account_id")
         val FIRST_DAY = stringPreferencesKey("first_day_of_week")
+        val THEME = stringPreferencesKey("theme")
+        val HIDE_AMOUNTS = booleanPreferencesKey("hide_amounts")
+        val PIN_HASH = stringPreferencesKey("pin_hash")
+        val PIN_SALT = stringPreferencesKey("pin_salt")
+        val BIOMETRIC = booleanPreferencesKey("biometric")
+        val LOCK_AFTER = androidx.datastore.preferences.core.intPreferencesKey("lock_after_minutes")
         val DEBT_DAYS = androidx.datastore.preferences.core.intPreferencesKey("debt_reminder_days")
         val NOTIFIED = androidx.datastore.preferences.core.stringSetPreferencesKey("notified_keys")
     }

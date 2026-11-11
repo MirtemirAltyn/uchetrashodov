@@ -118,4 +118,7 @@ class CurrencyRateRepositoryImpl @Inject constructor(
         val createdAt = dao.get(rate.code)?.createdAt ?: now
         dao.upsert(CurrencyRateEntity(rate.code, rate.rateToBaseMicros, createdAt, now))
     }
+
+    override suspend fun delete(code: String) = dao.delete(code)
+    override suspend fun deleteAll() = dao.deleteAll()
 }

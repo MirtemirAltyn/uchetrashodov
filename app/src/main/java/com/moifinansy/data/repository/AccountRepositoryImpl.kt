@@ -18,6 +18,8 @@ class AccountRepositoryImpl @Inject constructor(
         dao.observeWithBalance(includeArchived).map { rows -> rows.map { it.toModel() } }
 
     override fun observeTotal(currencyCode: String): Flow<Long> = dao.observeTotal(currencyCode)
+    override fun observeCurrenciesWithoutRate(base: String): Flow<List<String>> = dao.observeCurrenciesWithoutRate(base)
+    override fun observeUsedCurrencies(): Flow<List<String>> = dao.observeUsedCurrencies()
 
     override suspend fun get(id: Long): Account? = dao.getById(id)?.toModel()
 

@@ -332,4 +332,64 @@
     <string name="settings_debt_days">Напоминать о сроке долга</string>
     <string name="settings_debt_days_0">В день срока</string>
     <string name="settings_debt_days_n">За %1$d дн. и в день срока</string>
+
+    <!-- Блокировка -->
+    <string name="lock_title">Введите PIN-код</string>
+    <string name="lock_wrong">Неверный PIN-код</string>
+    <string name="lock_biometric">Войти по отпечатку или лицу</string>
+    <string name="lock_biometric_title">Мои финансы</string>
+    <string name="lock_erase">Стереть</string>
+    <string name="pin_setup_title">Новый PIN-код</string>
+    <string name="pin_setup_enter">Придумайте PIN из 4 цифр</string>
+    <string name="pin_setup_repeat">Повторите PIN</string>
+    <string name="pin_setup_mismatch">PIN-коды не совпали, попробуйте ещё раз</string>
+
+    <!-- Настройки: разделы -->
+    <string name="settings_section_look">Внешний вид</string>
+    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_first_day">Первый день недели</string>
+    <string name="settings_monday">Понедельник</string>
+    <string name="settings_sunday">Воскресенье</string>
+    <string name="settings_hide_amounts">Скрывать суммы на главном экране</string>
+    <string name="settings_hide_amounts_hint">Вместо сумм — точки; показать можно значком глаза</string>
+    <string name="settings_section_currency">Валюта</string>
+    <string name="settings_base_currency">Основная валюта</string>
+    <string name="settings_base_currency_hint">После смены основной валюты проверьте курсы: они задаются к ней</string>
+    <string name="settings_rates">Курсы валют</string>
+    <string name="settings_rates_missing">Нет курса: %1$s</string>
+    <string name="settings_section_security">Защита</string>
+    <string name="settings_pin">Вход по PIN-коду</string>
+    <string name="settings_pin_hint">Скрывает приложение от посторонних; скриншоты экрана запрещены</string>
+    <string name="settings_biometric">Отпечаток или лицо</string>
+    <string name="settings_biometric_unavailable">На телефоне не настроена биометрия</string>
+    <string name="settings_lock_after">Спрашивать PIN после фона</string>
+    <string name="settings_lock_now">Сразу</string>
+    <string name="settings_lock_minutes">%1$d мин</string>
+    <string name="settings_section_data">Данные</string>
+    <string name="settings_section_reminders">Напоминания</string>
+    <string name="settings_section_accounts">Счета</string>
+    <string name="settings_export_csv">Экспорт операций в CSV</string>
+    <string name="settings_export_period">Период экспорта</string>
+    <string name="settings_backup">Создать резервную копию</string>
+    <string name="settings_backup_hint">Файл JSON со всеми данными. Сохраните его в Google Drive, Telegram и т. п.</string>
+    <string name="settings_restore">Восстановить из копии</string>
+    <string name="settings_restore_title">Восстановить данные?</string>
+    <string name="settings_restore_text">Все текущие данные приложения заменятся данными из файла. Это нельзя отменить.</string>
+    <string name="settings_restore_confirm">Заменить</string>
+    <string name="data_export_done">Готово: операций в файле — %1$d</string>
+    <string name="data_backup_done">Резервная копия сохранена</string>
+    <string name="data_restore_done">Данные восстановлены</string>
+    <string name="data_error">Не получилось: %1$s</string>
+
+    <!-- Курсы -->
+    <string name="rates_title">Курсы валют</string>
+    <string name="rates_hint">Сколько стоит 1 единица валюты в основной (%1$s). Курс нужен, чтобы счета и операции в других валютах попадали в общий баланс и отчёты.</string>
+    <string name="rates_empty">Все счета и долги — в основной валюте, курсы не нужны</string>
+    <string name="rates_label">1 %1$s = … %2$s</string>
+    <string name="rates_invalid">Введите курс, например 87,45 или 0,0071</string>
+    <string name="hidden_amount">•••••</string>
+    <string name="show_amounts">Показать суммы</string>
+    <string name="hide_amounts">Скрыть суммы</string>
 </resources>
