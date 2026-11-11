@@ -39,13 +39,24 @@ abstract class CategoryDao {
     abstract suspend fun setArchived(id: Long, archived: Boolean, now: Long)
 
     @Query("SELECT COUNT(*) FROM categories WHERE parentId = :id")
-    protected abstract suspend fun countChildren(id: Long): Int
+    abstract suspend fun countChildren(id: Long): Int
+
+    @Query("UPDATE categories SET sortOrder = :sortOrder, updatedAt = :now WHERE id = :id")
+    protected abstract suspend fun setSortOrder(id: Long, sortOrder: Int, now: Long)
+
+    /** Новый порядок соседних категорий: позиция в списке становится sortOrder. */
+    @Transaction
+    open suspend fun reorder(ids: List<Long>, now: Long) {
+        val parents = ids.map { requireNotNull(getById(it)) { "Категория $it не найдена" } }.map { it.kind to it.parentId }.toSet()
+        require(parents.size <= 1) { "Переставлять можно только категории одного уровня и типа" }
+        ids.forEachIndexed { index, id -> setSortOrder(id, index, now) }
+    }
 
     @Query("SELECT COUNT(*) FROM transactions WHERE categoryId = :id")
     abstract suspend fun countTransactions(id: Long): Int
 
     @Query("SELECT COUNT(*) FROM recurring_rules WHERE categoryId = :id")
-    protected abstract suspend fun countRecurring(id: Long): Int
+    abstract suspend fun countRecurring(id: Long): Int
 
     @Query("UPDATE transactions SET categoryId = :to, updatedAt = :now WHERE categoryId = :from")
     protected abstract suspend fun moveTransactions(from: Long, to: Long, now: Long)

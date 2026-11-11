@@ -1,6 +1,9 @@
 package com.moifinansy.data.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.moifinansy.data.local.AppDatabase
 import com.moifinansy.data.local.DefaultCategories
@@ -12,6 +15,7 @@ import com.moifinansy.data.repository.DebtRepositoryImpl
 import com.moifinansy.data.repository.RecurringRepositoryImpl
 import com.moifinansy.data.repository.TagRepositoryImpl
 import com.moifinansy.data.repository.TransactionRepositoryImpl
+import com.moifinansy.data.settings.SettingsRepositoryImpl
 import com.moifinansy.domain.repository.AccountRepository
 import com.moifinansy.domain.repository.BudgetRepository
 import com.moifinansy.domain.repository.CategoryRepository
@@ -20,6 +24,7 @@ import com.moifinansy.domain.repository.DebtRepository
 import com.moifinansy.domain.repository.RecurringRepository
 import com.moifinansy.domain.repository.TagRepository
 import com.moifinansy.domain.repository.TransactionRepository
+import com.moifinansy.domain.settings.SettingsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -29,9 +34,15 @@ import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import javax.inject.Singleton
 
+private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun settingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.settingsDataStore
 
     @Provides
     @Singleton
@@ -65,4 +76,5 @@ abstract class RepositoryModule {
     @Binds abstract fun budgets(impl: BudgetRepositoryImpl): BudgetRepository
     @Binds abstract fun recurring(impl: RecurringRepositoryImpl): RecurringRepository
     @Binds abstract fun currencyRates(impl: CurrencyRateRepositoryImpl): CurrencyRateRepository
+    @Binds @Singleton abstract fun settings(impl: SettingsRepositoryImpl): SettingsRepository
 }

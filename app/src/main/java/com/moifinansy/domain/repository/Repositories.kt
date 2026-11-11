@@ -30,6 +30,10 @@ interface AccountRepository {
     suspend fun create(account: Account): Long
     suspend fun update(account: Account)
     suspend fun setArchived(id: Long, archived: Boolean)
+    /** Сколько операций, движений долгов и регулярных платежей ссылается на счёт. */
+    suspend fun usageCount(id: Long): Int
+    /** Удаляет счёт без операций. Счёт с операциями можно только архивировать. */
+    suspend fun delete(id: Long)
 }
 
 interface CategoryRepository {
@@ -40,10 +44,17 @@ interface CategoryRepository {
     suspend fun setArchived(id: Long, archived: Boolean)
     /** Удаляет категорию, перенося её операции и регулярные платежи в [moveToId]. */
     suspend fun delete(id: Long, moveToId: Long?)
+    /** Порядок соседних категорий (один уровень, один тип). */
+    suspend fun reorder(ids: List<Long>)
+    /** Сколько операций и регулярных платежей в категории. */
+    suspend fun usageCount(id: Long): Int
+    suspend fun childrenCount(id: Long): Int
 }
 
 interface TransactionRepository {
     fun observeRange(from: Long, to: Long): Flow<List<Transaction>>
+    /** Операции, где счёт — источник или получатель, новые сверху. */
+    fun observeForAccount(accountId: Long): Flow<List<Transaction>>
     suspend fun get(id: Long): Transaction?
     /** Создаёт (id == 0) или обновляет операцию вместе с тегами. Возвращает id. */
     suspend fun save(transaction: Transaction, tagIds: List<Long> = emptyList()): Long

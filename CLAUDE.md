@@ -12,7 +12,8 @@ Gradle Kotlin DSL, версии в `gradle/libs.versions.toml`. minSdk 26, targe
 - `data` — Room, DAO, репозитории;
 - `domain` — модели и use cases (без зависимостей от Android);
 - `ui` — экраны и ViewModel, по папке на раздел (`home`, `operations`, `debts`, `reports`, `more`), навигация в `ui/navigation`;
-- `core` — тема (`core/ui/theme`), форматирование денег и дат, общие компоненты.
+- `core` — тема (`core/ui/theme`), форматирование денег и дат (`core/format`), общие компоненты (`core/ui`).
+- Настройки (основная валюта, онбординг) — `SettingsRepository` на DataStore.
 
 ## Обязательные правила
 - Деньги — только `Long` в минимальных единицах (тыйыны/копейки). Никогда не `Double`/`Float`.
@@ -38,5 +39,8 @@ Gradle Kotlin DSL, версии в `gradle/libs.versions.toml`. minSdk 26, targe
 
 ## Тесты
 - Unit-тесты на JVM; тесты Room — через Robolectric на базе в памяти, наследуются от `app/src/test/.../data/DbTest.kt`.
+- `ui/AppSmokeTest` — сквозной прогон настоящего `MainActivity` (онбординг → счета → категории) через Compose UI test.
+  Скриншоты экранов: `./gradlew testDebugUnitTest -Pscreenshots` → `app/build/screenshots/`.
+- Поля ввода внутри `AlertDialog` в Robolectric «не дают уснуть» тестовым часам — ввод суммы делаем на экране, не в диалоге.
 - Robolectric работает офлайн: его Android-рантайм (`android-all-instrumented`) скачивает Gradle как зависимость
   `robolectricRuntime`. Версия рантайма в `libs.versions.toml` должна подходить к версии Robolectric.

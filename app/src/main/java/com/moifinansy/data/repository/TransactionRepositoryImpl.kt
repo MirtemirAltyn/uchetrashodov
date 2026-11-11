@@ -23,6 +23,9 @@ class TransactionRepositoryImpl @Inject constructor(
     override fun observeRange(from: Long, to: Long): Flow<List<Transaction>> =
         dao.observeRange(from, to).map { rows -> rows.map { it.toModel() } }
 
+    override fun observeForAccount(accountId: Long): Flow<List<Transaction>> =
+        dao.observeForAccount(accountId).map { rows -> rows.map { it.toModel() } }
+
     override suspend fun get(id: Long): Transaction? = dao.getById(id)?.toModel()
 
     override suspend fun save(transaction: Transaction, tagIds: List<Long>): Long {

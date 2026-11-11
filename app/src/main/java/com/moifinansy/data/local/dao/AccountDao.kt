@@ -19,6 +19,16 @@ interface AccountDao {
     @Query("SELECT * FROM accounts WHERE id = :id")
     suspend fun getById(id: Long): AccountEntity?
 
+    @Query(
+        "SELECT (SELECT COUNT(*) FROM transactions WHERE accountId = :id OR toAccountId = :id)" +
+            " + (SELECT COUNT(*) FROM debt_payments WHERE accountId = :id)" +
+            " + (SELECT COUNT(*) FROM recurring_rules WHERE accountId = :id OR toAccountId = :id)",
+    )
+    suspend fun countUsages(id: Long): Int
+
+    @Query("DELETE FROM accounts WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("UPDATE accounts SET isArchived = :archived, updatedAt = :now WHERE id = :id")
     suspend fun setArchived(id: Long, archived: Boolean, now: Long)
 

@@ -38,6 +38,12 @@ class CategoryRepositoryImpl @Inject constructor(
 
     override suspend fun delete(id: Long, moveToId: Long?) = dao.deleteMovingTransactions(id, moveToId, clock.millis())
 
+    override suspend fun reorder(ids: List<Long>) = dao.reorder(ids, clock.millis())
+
+    override suspend fun usageCount(id: Long): Int = dao.countTransactions(id) + dao.countRecurring(id)
+
+    override suspend fun childrenCount(id: Long): Int = dao.countChildren(id)
+
     /** Два уровня: родитель должен быть категорией верхнего уровня того же типа. */
     private suspend fun validate(category: Category) {
         require(category.name.isNotBlank()) { "Введите название категории" }

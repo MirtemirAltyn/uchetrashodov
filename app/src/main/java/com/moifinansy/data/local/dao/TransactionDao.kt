@@ -27,6 +27,9 @@ abstract class TransactionDao {
     @Query("SELECT * FROM transactions WHERE date >= :from AND date < :to ORDER BY date DESC, id DESC")
     abstract fun observeRange(from: Long, to: Long): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions WHERE accountId = :accountId OR toAccountId = :accountId ORDER BY date DESC, id DESC")
+    abstract fun observeForAccount(accountId: Long): Flow<List<TransactionEntity>>
+
     @Query("SELECT tagId FROM transaction_tags WHERE transactionId = :transactionId ORDER BY tagId")
     abstract suspend fun tagIdsOf(transactionId: Long): List<Long>
 

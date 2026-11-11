@@ -47,6 +47,9 @@ val robolectricRuntime: Configuration by configurations.creating
 
 tasks.withType<Test>().configureEach {
     inputs.files(robolectricRuntime)
+    // Скриншоты экранов в тестах: ./gradlew test -Pscreenshots → app/build/screenshots/
+    systemProperty("roborazzi.test.record", (project.findProperty("screenshots") != null).toString())
+    systemProperty("screenshots.dir", layout.buildDirectory.dir("screenshots").get().asFile.absolutePath)
     doFirst {
         systemProperty("robolectric.offline", "true")
         systemProperty("robolectric.dependency.dir", robolectricRuntime.singleFile.parentFile.absolutePath)
@@ -77,7 +80,10 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.reorderable)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -85,5 +91,9 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.ext.junit)
     testImplementation(libs.androidx.room.testing)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
     robolectricRuntime(libs.robolectric.android.all)
 }

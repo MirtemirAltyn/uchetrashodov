@@ -39,6 +39,13 @@ class AccountRepositoryImpl @Inject constructor(
 
     override suspend fun setArchived(id: Long, archived: Boolean) = dao.setArchived(id, archived, clock.millis())
 
+    override suspend fun usageCount(id: Long): Int = dao.countUsages(id)
+
+    override suspend fun delete(id: Long) {
+        require(dao.countUsages(id) == 0) { "У счёта есть операции — его можно только архивировать" }
+        dao.deleteById(id)
+    }
+
     private fun validate(account: Account) {
         require(account.name.isNotBlank()) { "Введите название счёта" }
         require(account.currencyCode.length == 3) { "Код валюты — три буквы" }

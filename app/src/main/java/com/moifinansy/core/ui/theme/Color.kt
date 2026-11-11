@@ -9,6 +9,10 @@ val Income = Color(0xFF1F9D6B)
 val Expense = Color(0xFFE5534B)
 val Overdue = Color(0xFFF59E0B)
 
+// Непрозрачные «контейнерные» тона акцента: кнопка «+», выбранные чипы, индикатор вкладки.
+val PrimaryContainerLight = Color(0xFFE3E3F8)
+val PrimaryContainerDark = Color(0xFF2E2E58)
+
 val LightBackground = Color(0xFFF5F6FA)
 val LightSurface = Color(0xFFFFFFFF)
 val LightText = Color(0xFF1C1C28)

@@ -10,4 +10,101 @@
 
     <string name="fab_add">Добавить</string>
     <string name="empty_screen_soon">Скоро здесь появится содержимое</string>
+
+    <!-- Общие -->
+    <string name="action_back">Назад</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_edit">Изменить</string>
+    <string name="action_next">Далее</string>
+    <string name="action_archive">В архив</string>
+    <string name="action_unarchive">Вернуть из архива</string>
+    <string name="section_archived">В архиве</string>
+    <string name="field_name">Название</string>
+    <string name="field_color">Цвет</string>
+    <string name="field_icon">Иконка</string>
+    <string name="error_name_required">Введите название</string>
+    <string name="error_amount_invalid">Введите сумму, например 12500 или 12500,50</string>
+    <string name="drag_handle">Перетащить</string>
+
+    <!-- Типы счетов -->
+    <string name="account_type_cash">Наличные</string>
+    <string name="account_type_card">Банковская карта</string>
+    <string name="account_type_ewallet">Электронный кошелёк</string>
+    <string name="account_type_savings">Накопления</string>
+    <string name="account_type_other">Другое</string>
+
+    <!-- Онбординг -->
+    <string name="onboarding_welcome">Добро пожаловать</string>
+    <string name="onboarding_currency_title">Основная валюта</string>
+    <string name="onboarding_currency_hint">В ней считается общий баланс и отчёты. Счета и долги можно вести и в других валютах.</string>
+    <string name="onboarding_account_title">Первый счёт</string>
+    <string name="onboarding_account_hint">Например, наличные в кошельке или банковская карта. Остальные счета добавите позже.</string>
+    <string name="onboarding_account_default_name">Наличные</string>
+    <string name="onboarding_start">Начать</string>
+    <string name="onboarding_step">Шаг %1$d из %2$d</string>
+
+    <!-- Ещё -->
+    <string name="more_accounts">Счета</string>
+    <string name="more_accounts_hint">Карты, наличные, накопления</string>
+    <string name="more_categories">Категории</string>
+    <string name="more_categories_hint">Расходы и доходы, подкатегории</string>
+    <string name="more_base_currency">Основная валюта: %1$s</string>
+
+    <!-- Счета -->
+    <string name="accounts_title">Счета</string>
+    <string name="accounts_total">Всего на счетах</string>
+    <string name="accounts_total_hint">Счета в основной валюте, отмеченные «учитывать в общем балансе»</string>
+    <string name="accounts_empty">Счетов пока нет</string>
+    <string name="accounts_add">Добавить счёт</string>
+    <string name="account_not_in_total">Не в общем балансе</string>
+
+    <string name="account_new">Новый счёт</string>
+    <string name="account_edit">Изменить счёт</string>
+    <string name="account_field_type">Тип</string>
+    <string name="account_field_currency">Валюта</string>
+    <string name="account_field_initial_balance">Начальный баланс</string>
+    <string name="account_field_initial_balance_hint">Сколько денег было на счёте до начала учёта</string>
+    <string name="account_field_include_in_total">Учитывать в общем балансе</string>
+    <string name="account_currency_locked">Валюту нельзя поменять, пока на счёте есть операции</string>
+    <string name="account_delete_title">Удалить счёт?</string>
+    <string name="account_delete_text">Счёт без операций удалится навсегда.</string>
+    <string name="account_delete_blocked">У счёта есть операции — его можно только убрать в архив.</string>
+
+    <string name="account_balance">Баланс</string>
+    <string name="account_adjust">Корректировка баланса</string>
+    <string name="account_adjust_text">Введите сумму, которая на самом деле есть на счёте. Разница сохранится как операция-корректировка.</string>
+    <string name="account_adjust_field">Фактический баланс</string>
+    <string name="account_adjust_apply">Применить</string>
+    <string name="account_history">История операций</string>
+    <string name="account_history_empty">Операций по счёту пока нет</string>
+
+    <string name="operation_type_transfer_out">Перевод на «%1$s»</string>
+    <string name="operation_type_transfer_in">Перевод с «%1$s»</string>
+    <string name="operation_type_adjustment">Корректировка баланса</string>
+    <string name="operation_type_debt">Долг</string>
+    <string name="operation_unknown_account">другой счёт</string>
+    <string name="operation_unknown_category">Без категории</string>
+
+    <!-- Категории -->
+    <string name="categories_title">Категории</string>
+    <string name="categories_expenses">Расходы</string>
+    <string name="categories_incomes">Доходы</string>
+    <string name="categories_empty">Категорий нет</string>
+    <string name="categories_reorder_hint">Чтобы поменять порядок, перетащите категорию за значок справа</string>
+
+    <string name="category_new">Новая категория</string>
+    <string name="category_new_sub">Новая подкатегория</string>
+    <string name="category_edit">Изменить категорию</string>
+    <string name="category_parent">Подкатегория в «%1$s»</string>
+    <string name="category_subcategories">Подкатегории</string>
+    <string name="category_add_sub">Добавить подкатегорию</string>
+    <string name="category_system_hint">Служебная категория: сюда попадают комиссии переводов. Её можно переименовать, но нельзя удалить.</string>
+    <string name="category_delete_title">Удалить категорию?</string>
+    <string name="category_delete_empty">В категории нет операций, она удалится навсегда.</string>
+    <string name="category_delete_move">В категории операций: %1$d. Выберите, куда их перенести, или уберите категорию в архив.</string>
+    <string name="category_delete_has_children">Сначала удалите подкатегории или перенесите их операции.</string>
+    <string name="category_delete_move_to">Перенести в</string>
+    <string name="category_delete_choose">Выберите категорию</string>
 </resources>
