@@ -248,4 +248,28 @@
     <string name="contact_saldo_zero">В расчёте</string>
     <string name="contact_debts">Долги</string>
     <string name="contact_delete">Удалить контакт</string>
+
+    <!-- Отчёты -->
+    <string name="reports_tab_expense">Расходы</string>
+    <string name="reports_tab_income">Доходы</string>
+    <string name="reports_tab_dynamics">Динамика</string>
+    <string name="period_day">День</string>
+    <string name="period_week">Неделя</string>
+    <string name="period_month">Месяц</string>
+    <string name="period_year">Год</string>
+    <string name="period_custom">Период</string>
+    <string name="reports_total">Всего</string>
+    <string name="reports_empty">За этот период операций нет</string>
+    <string name="reports_summary">Итоги периода</string>
+    <string name="reports_difference">Разница</string>
+    <string name="reports_avg_daily">Средний расход в день</string>
+    <string name="reports_top5">Топ-5 категорий расходов</string>
+    <string name="reports_change">%1$s к прошлому периоду</string>
+    <string name="reports_change_none">Прошлый период пуст — сравнить не с чем</string>
+    <string name="reports_months">По месяцам</string>
+    <string name="reports_legend">Зелёный — доходы, красный — расходы, линия — общий баланс на конец месяца</string>
+    <string name="reports_share">%1$d %% от всех</string>
+    <string name="reports_subcategories">По подкатегориям</string>
+    <string name="reports_operations">Операции</string>
+    <string name="reports_category_months">Сумма по месяцам</string>
 </resources>

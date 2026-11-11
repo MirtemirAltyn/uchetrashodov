@@ -28,6 +28,14 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[SHOW_ACCOUNT_TYPES] = show }
     }
 
+    override val firstDayOfWeek: Flow<java.time.DayOfWeek> = dataStore.data
+        .map { prefs -> prefs[FIRST_DAY]?.let { runCatching { java.time.DayOfWeek.valueOf(it) }.getOrNull() } ?: java.time.DayOfWeek.MONDAY }
+        .distinctUntilChanged()
+
+    override suspend fun setFirstDayOfWeek(day: java.time.DayOfWeek) {
+        dataStore.edit { it[FIRST_DAY] = day.name }
+    }
+
     override val lastAccountId: Flow<Long?> = dataStore.data.map { it[LAST_ACCOUNT_ID] }.distinctUntilChanged()
 
     override suspend fun setLastAccountId(id: Long) {
@@ -47,5 +55,6 @@ class SettingsRepositoryImpl @Inject constructor(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val SHOW_ACCOUNT_TYPES = booleanPreferencesKey("show_account_types")
         val LAST_ACCOUNT_ID = longPreferencesKey("last_account_id")
+        val FIRST_DAY = stringPreferencesKey("first_day_of_week")
     }
 }

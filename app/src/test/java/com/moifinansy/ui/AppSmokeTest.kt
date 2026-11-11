@@ -3,11 +3,13 @@ package com.moifinansy.ui
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -89,6 +91,24 @@ class AppSmokeTest {
         waitForText("Продукты")
         click("Главная")
         waitForText(MoneyFormat.format(1_234_500, "KGS"))
+
+        // Отчёты: кольцо расходов и динамика.
+        click("Отчёты")
+        waitForText("Всего")
+        waitForText("100 %")
+        shot("02e_reports")
+        click("Динамика")
+        waitForText("По месяцам")
+        shot("02f_dynamics")
+        compose.onNode(hasText("Расходы") and hasClickAction()).performClick()
+        waitForText("100 %")
+        compose.onNode(hasText("Продукты") and hasClickAction()).performClick()
+        waitForText("Сумма по месяцам")
+        waitForText("100 % от всех", substring = true)
+        waitForText(MoneyFormat.format(15_500, "KGS"))
+        shot("02g_category_report")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitForText("Итоги периода")
 
         waitForText("Ещё")
         click("Ещё")

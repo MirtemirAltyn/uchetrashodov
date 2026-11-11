@@ -61,6 +61,9 @@ interface TransactionRepository {
     fun observeTotalIncome(from: Long, to: Long): Flow<Long>
     /** Расходы по категориям (по самим категориям операций, без свёртки в родителя). */
     fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotal>>
+    fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotal>>
+    fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<Map<java.time.YearMonth, Long>>
+    fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.domain.model.MonthTotals>>
     suspend fun get(id: Long): Transaction?
     /** Создаёт (id == 0) или обновляет операцию вместе с тегами. Возвращает id. */
     suspend fun save(transaction: Transaction, tagIds: List<Long> = emptyList()): Long

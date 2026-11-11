@@ -21,6 +21,11 @@ class FakeSettings : SettingsRepository {
     override val onboardingCompleted: Flow<Boolean> = completed
     val showTypes = MutableStateFlow(true)
     override val showAccountTypes: Flow<Boolean> = showTypes
+    val firstDay = MutableStateFlow(java.time.DayOfWeek.MONDAY)
+    override val firstDayOfWeek: Flow<java.time.DayOfWeek> = firstDay
+    override suspend fun setFirstDayOfWeek(day: java.time.DayOfWeek) {
+        firstDay.value = day
+    }
     val lastAccount = MutableStateFlow<Long?>(null)
     override val lastAccountId: Flow<Long?> = lastAccount
     override suspend fun setLastAccountId(id: Long) {

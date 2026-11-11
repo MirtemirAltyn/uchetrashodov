@@ -107,6 +107,8 @@ data class ContactBalance(val contactId: Long, val currencyCode: String, val sal
 
 data class CategoryTotal(val categoryId: Long, val total: Long)
 
+data class MonthTotals(val month: java.time.YearMonth, val income: Long, val expense: Long, val net: Long)
+
 data class Budget(
     val id: Long = 0,
     /** null — лимит на все расходы. */

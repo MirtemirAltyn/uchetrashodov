@@ -38,6 +38,17 @@ class TransactionRepositoryImpl @Inject constructor(
     override fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotal>> =
         dao.observeExpenseByCategory(from, to).map { rows -> rows.map { it.toModel() } }
 
+    override fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotal>> =
+        dao.observeIncomeByCategory(from, to).map { rows -> rows.map { it.toModel() } }
+
+    override fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<Map<java.time.YearMonth, Long>> =
+        dao.observeCategoryMonths(categoryId, from, to).map { rows -> rows.associate { java.time.YearMonth.parse(it.month) to it.total } }
+
+    override fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.domain.model.MonthTotals>> =
+        dao.observeMonthTotals(from, to).map { rows ->
+            rows.map { com.moifinansy.domain.model.MonthTotals(java.time.YearMonth.parse(it.month), it.income, it.expense, it.net) }
+        }
+
     override suspend fun get(id: Long): Transaction? = dao.getById(id)?.toModel()
 
     override suspend fun save(transaction: Transaction, tagIds: List<Long>): Long {

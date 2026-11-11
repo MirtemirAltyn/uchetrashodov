@@ -48,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.moifinansy.ui.reports.CategoryReportScreen
 import com.moifinansy.ui.reports.ReportsScreen
 import com.moifinansy.ui.settings.SettingsScreen
 
@@ -187,7 +188,22 @@ fun MoiFinansyNavHost() {
                     onAddDebt = { navController.navigate(Routes.debtEdit(it)) },
                 )
             }
-            composable(TopLevelDestination.REPORTS.route) { ReportsScreen() }
+            composable(TopLevelDestination.REPORTS.route) {
+                ReportsScreen(onOpenCategory = { id, kind, period -> navController.navigate(Routes.categoryReport(id, kind, period)) })
+            }
+            composable(
+                Routes.CATEGORY_REPORT,
+                arguments = listOf(
+                    idArg,
+                    navArgument("kind") { type = NavType.StringType; defaultValue = CategoryKind.EXPENSE.name },
+                    navArgument("period") { type = NavType.StringType; defaultValue = "MONTH" },
+                    navArgument("anchor") { type = NavType.LongType; defaultValue = 0L },
+                    navArgument("from") { type = NavType.LongType; defaultValue = Long.MIN_VALUE },
+                    navArgument("to") { type = NavType.LongType; defaultValue = Long.MIN_VALUE },
+                ),
+            ) {
+                CategoryReportScreen(onBack = navController::popBackStack, onOpenOperation = ::openOperation)
+            }
             composable(TopLevelDestination.MORE.route) {
                 MoreScreen(
                     onAccounts = { navController.navigate(Routes.ACCOUNTS) },

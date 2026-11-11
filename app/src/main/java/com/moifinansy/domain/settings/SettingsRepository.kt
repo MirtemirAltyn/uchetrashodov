@@ -14,6 +14,10 @@ interface SettingsRepository {
     suspend fun setBaseCurrency(code: String)
     suspend fun setShowAccountTypes(show: Boolean)
 
+    /** Первый день недели для отчётов по неделям. */
+    val firstDayOfWeek: Flow<java.time.DayOfWeek>
+    suspend fun setFirstDayOfWeek(day: java.time.DayOfWeek)
+
     /** Счёт последней операции — подставляется в новую операцию. */
     val lastAccountId: Flow<Long?>
     suspend fun setLastAccountId(id: Long)

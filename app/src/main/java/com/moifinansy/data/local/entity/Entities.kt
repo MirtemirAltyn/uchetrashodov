@@ -241,3 +241,8 @@ data class DebtTotalsRow(val iOwe: Long, val owedToMe: Long)
 data class ContactBalanceRow(val contactId: Long, val currencyCode: String, val saldo: Long)
 
 data class CategoryTotalRow(val categoryId: Long, val total: Long)
+
+/** Месяц «2026-11»: доходы, расходы (с комиссиями) и чистое изменение денег на счетах. */
+data class MonthAmountRow(val month: String, val total: Long)
+
+data class MonthTotalsRow(val month: String, val income: Long, val expense: Long, val net: Long)

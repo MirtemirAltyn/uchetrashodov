@@ -117,6 +117,31 @@ abstract class TransactionDao {
     abstract fun observeExpenseByCategory(from: Long, to: Long): Flow<List<CategoryTotalRow>>
 
     @Query(
+        "SELECT categoryId, SUM(amount) AS total FROM transactions " +
+            "WHERE type = 'INCOME' AND date >= :from AND date < :to GROUP BY categoryId ORDER BY total DESC",
+    )
+    abstract fun observeIncomeByCategory(from: Long, to: Long): Flow<List<CategoryTotalRow>>
+
+    /** Помесячные суммы категории вместе с подкатегориями. */
+    @Query(
+        "SELECT strftime('%Y-%m', date / 1000, 'unixepoch', 'localtime') AS month, SUM(amount) AS total " +
+            "FROM transactions WHERE type IN ('EXPENSE', 'INCOME') AND date >= :from AND date < :to " +
+            "AND (categoryId = :categoryId OR categoryId IN (SELECT id FROM categories WHERE parentId = :categoryId)) " +
+            "GROUP BY month ORDER BY month",
+    )
+    abstract fun observeCategoryMonths(categoryId: Long, from: Long, to: Long): Flow<List<com.moifinansy.data.local.entity.MonthAmountRow>>
+
+    /** Помесячные итоги; месяц — по местному времени устройства. */
+    @Query(
+        "SELECT strftime('%Y-%m', date / 1000, 'unixepoch', 'localtime') AS month, " +
+            "COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) AS income, " +
+            "COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount WHEN type = 'TRANSFER' THEN fee ELSE 0 END), 0) AS expense, " +
+            "COALESCE(SUM(CASE type WHEN 'INCOME' THEN amount WHEN 'EXPENSE' THEN -amount WHEN 'TRANSFER' THEN -fee ELSE amount END), 0) AS net " +
+            "FROM transactions WHERE date >= :from AND date < :to GROUP BY month ORDER BY month",
+    )
+    abstract fun observeMonthTotals(from: Long, to: Long): Flow<List<com.moifinansy.data.local.entity.MonthTotalsRow>>
+
+    @Query(
         "SELECT categoryId, SUM(amount) AS total FROM (" +
             "SELECT categoryId, amount FROM transactions WHERE type = 'EXPENSE' AND date >= :from AND date < :to " +
             "UNION ALL " +
