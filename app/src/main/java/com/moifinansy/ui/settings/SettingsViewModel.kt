@@ -49,6 +49,8 @@ data class SettingsState(
     val missingRates: List<String> = emptyList(),
     val security: SecuritySettings = SecuritySettings(),
     val debtsAffectBalance: Boolean = true,
+    val demoCount: Int = 0,
+    val userTransactions: Int = 0,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,6 +62,8 @@ class SettingsViewModel @Inject constructor(
     private val categories: CategoryRepository,
     private val transactions: TransactionRepository,
     private val backup: BackupManager,
+    private val demo: com.moifinansy.data.demo.DemoDataGenerator,
+    private val demoDao: com.moifinansy.data.local.dao.DemoDao,
     private val clock: Clock,
     @param:ApplicationContext private val context: Context,
 ) : ViewModel() {
@@ -71,7 +75,11 @@ class SettingsViewModel @Inject constructor(
 
     val state: StateFlow<SettingsState> = combine(basic, settings.baseCurrency, settings.security, settings.debtsAffectBalance) { b, base, security, debts ->
         b.copy(baseCurrency = base ?: Currencies.DEFAULT, security = security, debtsAffectBalance = debts)
-    }.flatMapLatest { s -> accounts.observeCurrenciesWithoutRate(s.baseCurrency).let { flow -> combine(flow, kotlinx.coroutines.flow.flowOf(s)) { missing, st -> st.copy(missingRates = missing) } } }
+    }.flatMapLatest { s ->
+        combine(accounts.observeCurrenciesWithoutRate(s.baseCurrency), demoDao.observeDemoCount(), demoDao.observeUserTransactionCount()) { missing, demo, user ->
+            s.copy(missingRates = missing, demoCount = demo, userTransactions = user)
+        }
+    }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsState())
 
     private val _message = MutableStateFlow<String?>(null)
@@ -113,6 +121,18 @@ class SettingsViewModel @Inject constructor(
             write(uri, csv)
             list.size
         }.onSuccess { _message.value = context.getString(R.string.data_export_done, it) }
+            .onFailure { _message.value = context.getString(R.string.data_error, it.message.orEmpty()) }
+    }
+
+    fun fillDemo() = launch {
+        runCatching { demo.generate() }
+            .onSuccess { _message.value = context.getString(R.string.demo_filled) }
+            .onFailure { _message.value = context.getString(R.string.data_error, it.message.orEmpty()) }
+    }
+
+    fun deleteDemo() = launch {
+        runCatching { demo.delete() }
+            .onSuccess { _message.value = context.getString(R.string.demo_deleted) }
             .onFailure { _message.value = context.getString(R.string.data_error, it.message.orEmpty()) }
     }
 

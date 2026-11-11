@@ -415,4 +415,14 @@
     <string name="suggest_text">%1$s · %2$s · каждый месяц около %3$d-го (уже %4$d мес. подряд)</string>
     <string name="suggest_add">Добавить</string>
     <string name="suggest_dismiss">Не надо</string>
+
+    <!-- Демо -->
+    <string name="demo_fill">Заполнить демо-данными за год</string>
+    <string name="demo_fill_hint">Выдуманные счета, операции, долги, бюджеты — посмотреть, как выглядят отчёты. Доступно, пока своих операций нет.</string>
+    <string name="demo_delete">Удалить демо-данные</string>
+    <string name="demo_delete_hint">Ваши собственные записи останутся</string>
+    <string name="demo_delete_title">Удалить демо-данные?</string>
+    <string name="demo_delete_text">Удалятся все выдуманные счета, операции, долги, бюджеты и регулярные платежи. Ваши записи останутся; демо-счёт, на который вы записали свои операции, тоже останется.</string>
+    <string name="demo_filled">Демо-данные добавлены</string>
+    <string name="demo_deleted">Демо-данные удалены</string>
 </resources>

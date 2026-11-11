@@ -54,14 +54,10 @@ class TransactionRepositoryImpl @Inject constructor(
     override suspend fun save(transaction: Transaction, tagIds: List<Long>): Long {
         validate(transaction)
         val now = clock.millis()
-        val createdAt = if (transaction.id == 0L) {
-            now
-        } else {
-            val old = requireNotNull(dao.getById(transaction.id)) { "Операция ${transaction.id} не найдена" }
-            require(old.type != TransactionType.DEBT) { "Движения по долгу меняются на экране долга" }
-            old.createdAt
-        }
-        return dao.upsertWithTags(transaction.toEntity(createdAt, now), tagIds, now)
+        val old = if (transaction.id == 0L) null else requireNotNull(dao.getById(transaction.id)) { "Операция ${transaction.id} не найдена" }
+        require(old?.type != TransactionType.DEBT) { "Движения по долгу меняются на экране долга" }
+        val entity = transaction.toEntity(old?.createdAt ?: now, now).copy(isDemo = old?.isDemo ?: false)
+        return dao.upsertWithTags(entity, tagIds, now)
     }
 
     override suspend fun delete(id: Long) {

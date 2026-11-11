@@ -1,5 +1,6 @@
 package com.moifinansy.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -31,6 +32,8 @@ data class AccountEntity(
     val sortOrder: Int,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(
@@ -85,6 +88,8 @@ data class TransactionEntity(
     val receiptUri: String?,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(tableName = "tags", indices = [Index(value = ["name"], unique = true)])
@@ -93,6 +98,8 @@ data class TagEntity(
     val name: String,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(
@@ -119,6 +126,8 @@ data class ContactEntity(
     val note: String?,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(
@@ -141,6 +150,8 @@ data class DebtEntity(
     val affectsAccounts: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(
@@ -181,6 +192,8 @@ data class BudgetEntity(
     val currencyCode: String,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(
@@ -209,6 +222,8 @@ data class RecurringRuleEntity(
     val endDate: Long?,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Демо-запись: удаляется кнопкой «Удалить демо-данные». */
+    @ColumnInfo(defaultValue = "0") val isDemo: Boolean = false,
 )
 
 @Entity(tableName = "currency_rates")

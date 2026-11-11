@@ -156,6 +156,7 @@ abstract class DebtDao {
                     receiptUri = null,
                     createdAt = now,
                     updatedAt = now,
+                    isDemo = debt.isDemo,
                 ),
             )
         }
@@ -225,6 +226,7 @@ abstract class DebtDao {
                         receiptUri = null,
                         createdAt = now,
                         updatedAt = now,
+                        isDemo = debt.isDemo,
                     ),
                 )
                 attachPayment(p.id, account, transactionId, now)

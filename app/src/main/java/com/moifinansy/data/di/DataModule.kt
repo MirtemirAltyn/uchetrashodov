@@ -53,6 +53,7 @@ object DatabaseModule {
     fun database(@ApplicationContext context: Context, clock: Clock): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
             .addCallback(DefaultCategories.callback { clock.millis() })
+            .addMigrations(AppDatabase.MIGRATION_1_2)
             .build()
 
     @Provides fun accountDao(db: AppDatabase) = db.accountDao()
@@ -63,6 +64,7 @@ object DatabaseModule {
     @Provides fun budgetDao(db: AppDatabase) = db.budgetDao()
     @Provides fun recurringRuleDao(db: AppDatabase) = db.recurringRuleDao()
     @Provides fun currencyRateDao(db: AppDatabase) = db.currencyRateDao()
+    @Provides fun demoDao(db: AppDatabase) = db.demoDao()
 }
 
 @Module

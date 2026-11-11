@@ -44,7 +44,7 @@ class BudgetRepositoryImpl @Inject constructor(
         val now = clock.millis()
         if (budget.id == 0L) return dao.insert(budget.toEntity(now, now))
         val old = requireNotNull(dao.getById(budget.id)) { "Бюджет ${budget.id} не найден" }
-        dao.update(budget.toEntity(old.createdAt, now))
+        dao.update(budget.toEntity(old.createdAt, now).copy(isDemo = old.isDemo))
         return budget.id
     }
 
@@ -76,7 +76,7 @@ class RecurringRepositoryImpl @Inject constructor(
         )
         // Проведённая дата не раньше текущей «следующей» — сдвигаем правило за неё.
         val newNext = if (date >= rule.nextDate) next else rule.nextDate
-        return transactionDao.insertForRule(t.toEntity(now, now), ruleId, newNext, now)
+        return transactionDao.insertForRule(t.toEntity(now, now).copy(isDemo = rule.isDemo), ruleId, newNext, now)
     }
 
     override suspend fun skip(ruleId: Long) {
@@ -99,7 +99,7 @@ class RecurringRepositoryImpl @Inject constructor(
         val now = clock.millis()
         if (rule.id == 0L) return dao.insert(rule.toEntity(now, now))
         val old = requireNotNull(dao.getById(rule.id)) { "Правило ${rule.id} не найдено" }
-        dao.update(rule.toEntity(old.createdAt, now))
+        dao.update(rule.toEntity(old.createdAt, now).copy(isDemo = old.isDemo))
         return rule.id
     }
 

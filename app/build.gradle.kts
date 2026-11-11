@@ -55,6 +55,10 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    // Схемы Room — для тестов миграций (unit-тесты берут ассеты отладочной сборки; в релиз не попадают).
+    sourceSets {
+        getByName("debug").assets.srcDir("$projectDir/schemas")
+    }
 }
 
 room {
@@ -65,6 +69,8 @@ room {
 val robolectricRuntime: Configuration by configurations.creating
 
 tasks.withType<Test>().configureEach {
+    // Тест миграций читает схемы из ассетов отладочной сборки — в варианте release его нет.
+    if (name.contains("Release")) exclude("**/MigrationTest*")
     inputs.files(robolectricRuntime)
     // Скриншоты экранов в тестах: ./gradlew test -Pscreenshots → app/build/screenshots/
     systemProperty("roborazzi.test.record", (project.findProperty("screenshots") != null).toString())

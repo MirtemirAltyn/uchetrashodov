@@ -29,8 +29,8 @@ class DebtRepositoryImpl @Inject constructor(
 
     override suspend fun updateContact(contact: Contact) {
         require(contact.name.isNotBlank()) { "Введите имя" }
-        val createdAt = requireNotNull(dao.contactCreatedAt(contact.id)) { "Контакт ${contact.id} не найден" }
-        dao.updateContact(contact.toEntity(createdAt, clock.millis()))
+        val old = requireNotNull(dao.getContact(contact.id)) { "Контакт ${contact.id} не найден" }
+        dao.updateContact(contact.toEntity(old.createdAt, clock.millis()).copy(isDemo = old.isDemo))
     }
 
     override fun observeDebts(): Flow<List<DebtWithRemaining>> = dao.observeWithRemaining().map { rows -> rows.map { it.toModel() } }

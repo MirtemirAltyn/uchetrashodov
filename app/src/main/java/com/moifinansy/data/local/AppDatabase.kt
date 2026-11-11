@@ -36,7 +36,7 @@ import com.moifinansy.data.local.entity.TransactionTagEntity
         RecurringRuleEntity::class,
         CurrencyRateEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -49,7 +49,18 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recurringRuleDao(): RecurringRuleDao
     abstract fun currencyRateDao(): CurrencyRateDao
 
+    abstract fun demoDao(): com.moifinansy.data.local.dao.DemoDao
+
     companion object {
         const val NAME = "moi_finansy.db"
+
+        /** v2: пометка демо-данных. */
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                listOf("accounts", "transactions", "tags", "contacts", "debts", "budgets", "recurring_rules").forEach {
+                    db.execSQL("ALTER TABLE `$it` ADD COLUMN `isDemo` INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+        }
     }
 }

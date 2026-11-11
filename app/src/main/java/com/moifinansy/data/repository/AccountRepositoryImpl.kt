@@ -36,7 +36,7 @@ class AccountRepositoryImpl @Inject constructor(
     override suspend fun update(account: Account) {
         validate(account)
         val old = requireNotNull(dao.getById(account.id)) { "Счёт ${account.id} не найден" }
-        dao.update(account.toEntity(old.createdAt, clock.millis()))
+        dao.update(account.toEntity(old.createdAt, clock.millis()).copy(isDemo = old.isDemo))
     }
 
     override suspend fun setArchived(id: Long, archived: Boolean) = dao.setArchived(id, archived, clock.millis())

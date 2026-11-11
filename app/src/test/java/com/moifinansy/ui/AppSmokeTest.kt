@@ -65,6 +65,8 @@ class AppSmokeTest {
         ),
     ).performClick()
 
+    private fun back() = compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+
     private fun click(text: String) = compose.onNodeWithText(text).performClick()
 
     @Test
@@ -78,6 +80,44 @@ class AppSmokeTest {
         input("Начальный баланс", "12500")
         shot("02_onboarding_account")
         click("Начать")
+
+        // Демо-данные: заполнить, посмотреть, удалить (пока своих операций нет).
+        waitForText("Общий баланс")
+        tab("Ещё")
+        click("Настройки")
+        waitForText("Заполнить демо-данными за год")
+        compose.onNodeWithText("Заполнить демо-данными за год").performScrollTo().performClick()
+        waitForText("Удалить демо-данные")
+        back()
+        tab("Главная")
+        waitForText("Карта Мбанк")
+        shot("d1_home_demo")
+        tab("Отчёты")
+        waitForText("Всего")
+        waitForText("Продукты")
+        shot("d2_reports_demo")
+        click("Динамика")
+        waitForText("По месяцам")
+        shot("d3_dynamics_demo")
+        compose.onNode(hasText("Расходы") and hasClickAction()).performClick()
+        tab("Долги")
+        waitForText("Азамат")
+        shot("d4_debts_demo")
+        tab("Ещё")
+        click("Регулярные платежи")
+        waitForText("Похоже на регулярный платёж")
+        shot("d5_recurring_demo")
+        back()
+        click("Настройки")
+        waitForText("Удалить демо-данные")
+        compose.onNodeWithText("Удалить демо-данные").performScrollTo().performClick()
+        waitForText("Удалить демо-данные?")
+        compose.onNode(hasText("Удалить") and hasClickAction()).performClick()
+        waitForText("Заполнить демо-данными за год")
+        back()
+        tab("Главная")
+        compose.waitUntilDoesNotExist(hasText("Карта Мбанк"), 15_000)
+        waitForText(MoneyFormat.format(1_250_000, "KGS"))
 
         // Главный экран: добавляем расход за три нажатия — «+», категория, «Сохранить».
         waitForText("Общий баланс")

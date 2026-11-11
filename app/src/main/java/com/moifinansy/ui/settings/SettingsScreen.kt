@@ -67,6 +67,7 @@ fun SettingsScreen(
     }
     var exportPeriod by remember { mutableStateOf(ExportPeriod.MONTH) }
     var confirmRestore by remember { mutableStateOf<android.net.Uri?>(null) }
+    var confirmDemoDelete by remember { mutableStateOf(false) }
     val today = LocalDate.now()
     val csvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri -> uri?.let { viewModel.exportCsv(it, exportPeriod) } }
     val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri -> uri?.let(viewModel::backup) }
@@ -130,6 +131,11 @@ fun SettingsScreen(
             LinkRow(stringResource(R.string.settings_export_csv), null) { csvLauncher.launch("moi-finansy-$today.csv") }
             LinkRow(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_hint)) { backupLauncher.launch("moi-finansy-backup-$today.json") }
             LinkRow(stringResource(R.string.settings_restore), null) { restoreLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
+            if (state.demoCount > 0) {
+                LinkRow(stringResource(R.string.demo_delete), stringResource(R.string.demo_delete_hint)) { confirmDemoDelete = true }
+            } else if (state.userTransactions == 0) {
+                LinkRow(stringResource(R.string.demo_fill), stringResource(R.string.demo_fill_hint), viewModel::fillDemo)
+            }
 
             Section(stringResource(R.string.settings_section_debts))
             SwitchRow(
@@ -157,6 +163,21 @@ fun SettingsScreen(
                 onChange = viewModel::setShowAccountTypes,
             )
         }
+    }
+
+    if (confirmDemoDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDemoDelete = false },
+            title = { Text(stringResource(R.string.demo_delete_title)) },
+            text = { Text(stringResource(R.string.demo_delete_text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDemoDelete = false
+                    viewModel.deleteDemo()
+                }) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDemoDelete = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
     }
 
     confirmRestore?.let { uri ->
