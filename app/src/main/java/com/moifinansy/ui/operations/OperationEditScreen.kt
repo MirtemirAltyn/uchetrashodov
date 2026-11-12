@@ -48,7 +48,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -132,9 +134,19 @@ fun OperationEditScreen(
 
             // Сумма с калькулятором.
             val currency = state.account?.currencyCode ?: "KGS"
+            // Своё значение поля с курсором: когда сумму меняет кнопка «+ − × ÷», курсор переносится в конец,
+            // иначе следующие цифры попадали бы перед знаком.
+            var amountField by remember { mutableStateOf(TextFieldValue(state.amountText, TextRange(state.amountText.length))) }
+            LaunchedEffect(state.amountText) {
+                if (state.amountText != amountField.text) amountField = TextFieldValue(state.amountText, TextRange(state.amountText.length))
+            }
             OutlinedTextField(
-                value = state.amountText,
-                onValueChange = { text -> viewModel.setAmount(text.filter { it.isDigit() || it in ".,+-−×÷*/ " }) },
+                value = amountField,
+                onValueChange = { v ->
+                    val text = v.text.filter { it.isDigit() || it in ".,+-−×÷*/ " }
+                    amountField = if (text == v.text) v else TextFieldValue(text, TextRange(text.length))
+                    viewModel.setAmount(text)
+                },
                 label = {
                     Text(
                         stringResource(if (state.type == TransactionType.ADJUSTMENT) R.string.op_adjustment_amount else R.string.op_amount) +

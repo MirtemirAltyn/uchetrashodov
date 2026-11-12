@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -124,7 +125,11 @@ class AppSmokeTest {
         waitForText("Общий баланс")
         compose.onNode(hasContentDescription("Добавить")).performClick()
         waitForText("Новая операция")
-        input("Сумма", "120+35")
+        // Калькулятор: «120», кнопка «+», «35» — цифры идут после знака.
+        input("Сумма", "120")
+        click("+")
+        compose.onNode(hasSetTextAction() and hasText("Сумма", substring = true)).performTextInput("35")
+        waitForText("120+35")
         waitForText("= " + MoneyFormat.format(15_500, "KGS"))
         click("Продукты")
         shot("02b_operation_edit")
