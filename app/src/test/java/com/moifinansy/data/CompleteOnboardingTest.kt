@@ -45,6 +45,11 @@ class FakeSettings : SettingsRepository {
         lastAccount.value = null
         notified.clear()
     }
+    val country = MutableStateFlow("+996")
+    override val phoneCountryCode: Flow<String> = country
+    override suspend fun setPhoneCountryCode(code: String) {
+        country.value = code
+    }
     val debtsAffect = MutableStateFlow(true)
     override val debtsAffectBalance: Flow<Boolean> = debtsAffect
     override suspend fun setDebtsAffectBalance(value: Boolean) {

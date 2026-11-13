@@ -43,6 +43,12 @@ fun ContactScreen(onBack: () -> Unit, onOpenDebt: (Long) -> Unit, onAddDebt: (Lo
     var name by remember(contact.id) { mutableStateOf(contact.name) }
     var phone by remember(contact.id) { mutableStateOf(contact.phone.orEmpty()) }
     val colors = LocalFinanceColors.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val pick = rememberPhonebookPicker { n, p ->
+        name = n
+        phone = p
+    }
+    val inPhone by androidx.compose.runtime.produceState<Boolean?>(null, contact.phone) { value = viewModel.inPhoneContacts(contact.phone) }
 
     Scaffold(
         topBar = { BackTopBar(contact.name, onBack) },
@@ -75,6 +81,12 @@ fun ContactScreen(onBack: () -> Unit, onOpenDebt: (Long) -> Unit, onAddDebt: (Lo
                     OutlinedTextField(phone, { phone = it }, label = { Text(stringResource(R.string.debt_contact_phone)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Button(onClick = { viewModel.save(name, phone) }, enabled = name.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.action_save))
+                    }
+                    TextButton(onClick = pick, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.contacts_pick)) }
+                    if (!contact.phone.isNullOrBlank() && inPhone != true) {
+                        TextButton(onClick = { saveToPhoneContacts(context, contact.name, contact.phone) }, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.contacts_save_to_phone))
+                        }
                     }
                 }
             }

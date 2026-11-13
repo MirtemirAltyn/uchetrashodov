@@ -3,6 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Подсказки из контактов телефона при вводе имени (только чтение, по разрешению пользователя). -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <!-- Проверить, установлен ли WhatsApp, чтобы открыть чат с должником сразу. -->
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+    </queries>
 
     <application
         android:name=".MoiFinansyApp"

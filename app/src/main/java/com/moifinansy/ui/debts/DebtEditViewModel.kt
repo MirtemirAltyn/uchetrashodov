@@ -45,6 +45,8 @@ data class DebtEditState(
     val amountError: Boolean = false,
     val accountError: Boolean = false,
     val savedId: Long? = null,
+    /** Совпадения из контактов телефона для введённого имени. */
+    val suggestions: List<com.moifinansy.data.contacts.PhoneContact> = emptyList(),
 ) {
     val accounts: List<Account> get() = allAccounts.filter { it.currencyCode == currencyCode }
 }
@@ -56,7 +58,27 @@ class DebtEditViewModel @Inject constructor(
     private val accountsRepo: AccountRepository,
     private val settings: SettingsRepository,
     private val clock: Clock,
+    private val phoneContacts: com.moifinansy.data.contacts.PhoneContacts,
 ) : ViewModel() {
+    private var searchJob: kotlinx.coroutines.Job? = null
+
+    fun canSuggest(): Boolean = phoneContacts.hasPermission()
+
+    /** Подсказки из контактов телефона (с небольшой задержкой, пока человек печатает). */
+    fun refreshSuggestions() {
+        val query = _state.value.contactName.trim()
+        searchJob?.cancel()
+        if (query.length < 2 || !phoneContacts.hasPermission()) {
+            _state.update { it.copy(suggestions = emptyList()) }
+            return
+        }
+        searchJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(250)
+            val found = phoneContacts.search(query)
+            _state.update { s -> if (s.contactName.trim() == query) s.copy(suggestions = found.filterNot { it.name == s.contactName && it.phone == s.contactPhone }) else s }
+        }
+    }
+
     private val argContactId: Long? = savedStateHandle.get<Long>("contactId")?.takeIf { it > 0 }
 
     private val _state = MutableStateFlow(DebtEditState())
@@ -85,11 +107,16 @@ class DebtEditViewModel @Inject constructor(
 
     fun selectContact(id: Long) = _state.update { it.copy(contactId = id, newContact = false, contactError = false) }
     fun startNewContact() = _state.update { it.copy(newContact = true, contactId = null) }
-    fun setContactName(text: String) = _state.update { it.copy(contactName = text, contactError = false) }
+    fun setContactName(text: String) {
+        _state.update { it.copy(contactName = text, contactError = false) }
+        refreshSuggestions()
+    }
     fun setContactPhone(text: String) = _state.update { it.copy(contactPhone = text) }
 
     /** Контакт из телефонной книги: если такой уже есть — выбираем его. */
     fun picked(name: String, phone: String?) {
+        searchJob?.cancel()
+        _state.update { it.copy(suggestions = emptyList()) }
         val digits = phone?.filter { it.isDigit() }
         val existing = _state.value.contacts.firstOrNull { c ->
             (digits != null && digits.isNotEmpty() && c.phone?.filter { it.isDigit() } == digits) || c.name.equals(name, ignoreCase = true)

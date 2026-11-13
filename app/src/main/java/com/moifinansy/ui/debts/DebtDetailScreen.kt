@@ -70,6 +70,7 @@ fun DebtDetailScreen(
     val panel by viewModel.panel.collectAsStateWithLifecycle()
     val deleted by viewModel.deleted.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val reminder = rememberReminder()
     var confirmDelete by remember { mutableStateOf(false) }
     var confirmAffectsOff by remember { mutableStateOf(false) }
     val colors = LocalFinanceColors.current
@@ -83,7 +84,7 @@ fun DebtDetailScreen(
     Scaffold(
         topBar = {
             BackTopBar(name, onBack) {
-                IconButton(onClick = { shareReminder(context, reminderText(context, debt, name)) }) {
+                IconButton(onClick = { reminder.open(context, debt, name, state.contact?.phone) }) {
                     Icon(Icons.Rounded.Share, contentDescription = stringResource(R.string.debt_remind))
                 }
                 IconButton(onClick = { confirmDelete = true }) {
@@ -124,6 +125,11 @@ fun DebtDetailScreen(
                     }
                     d.note?.takeIf { it.isNotBlank() }?.let { Text(it) }
                     TextButton(onClick = { onOpenContact(d.contactId) }) { Text(stringResource(R.string.contact_title) + ": " + name) }
+                    val phone = state.contact?.phone
+                    val inPhone by androidx.compose.runtime.produceState<Boolean?>(null, phone) { value = viewModel.inPhoneContacts(phone) }
+                    if (!phone.isNullOrBlank() && inPhone != true) {
+                        TextButton(onClick = { saveToPhoneContacts(context, name, phone) }) { Text(stringResource(R.string.contacts_save_to_phone)) }
+                    }
                 }
             }
             item(key = "affects") {

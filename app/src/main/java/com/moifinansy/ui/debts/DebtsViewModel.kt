@@ -38,7 +38,7 @@ data class DebtsQuery(
     val byPerson: Boolean = false,
 )
 
-data class DebtCard(val debt: DebtWithRemaining, val contactName: String, val overdue: Boolean)
+data class DebtCard(val debt: DebtWithRemaining, val contactName: String, val overdue: Boolean, val contactPhone: String? = null)
 
 data class PersonRow(val contact: Contact, val balances: List<ContactBalance>)
 
@@ -81,10 +81,11 @@ class DebtsViewModel @Inject constructor(
     ): DebtsState {
         val now = clock.millis()
         val names = contacts.associate { it.id to it.name }
+        val phones = contacts.associate { it.id to it.phone }
         val filtered = list
             .filter { it.debt.direction == q.direction }
             .filter { if (q.showClosed) true else it.debt.status == DebtStatus.ACTIVE }
-            .map { DebtCard(it, names[it.debt.contactId].orEmpty(), DebtMath.isOverdue(it.debt.status, it.debt.dueDate, now)) }
+            .map { DebtCard(it, names[it.debt.contactId].orEmpty(), DebtMath.isOverdue(it.debt.status, it.debt.dueDate, now), phones[it.debt.contactId]) }
         val sorted = when (q.sort) {
             DebtSort.DATE -> filtered.sortedByDescending { it.debt.debt.startDate }
             DebtSort.AMOUNT -> filtered.sortedByDescending { it.debt.remaining }

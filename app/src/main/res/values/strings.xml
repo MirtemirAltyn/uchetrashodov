@@ -451,4 +451,20 @@
     <string name="reset_confirm">Удалить всё</string>
     <string name="onboarding_demo">Посмотреть с демо-данными</string>
     <string name="onboarding_demo_hint">Приложение заполнится выдуманными данными за год; удалить их можно в «Ещё → Данные»</string>
+
+    <!-- Напоминание: куда отправить -->
+    <string name="remind_title">Напомнить о долге</string>
+    <string name="remind_to">%1$s · %2$s</string>
+    <string name="remind_whatsapp">WhatsApp — открыть чат</string>
+    <string name="remind_whatsapp_business">WhatsApp Business — открыть чат</string>
+    <string name="remind_sms">SMS на этот номер</string>
+    <string name="remind_other">Другое приложение (Telegram и др.)</string>
+    <string name="remind_no_phone">Добавьте телефон в карточке контакта, чтобы сразу открывать чат WhatsApp.</string>
+    <string name="settings_phone_country">Код страны для телефонов</string>
+    <string name="settings_phone_country_hint">Подставляется к номерам без «+», например 0555 123 456 → +996 555 123 456</string>
+
+    <!-- Контакты телефона -->
+    <string name="contacts_pick">Выбрать из контактов телефона</string>
+    <string name="contacts_suggestions_off">Подсказки из контактов телефона выключены: нет разрешения</string>
+    <string name="contacts_save_to_phone">Сохранить в контакты телефона</string>
 </resources>

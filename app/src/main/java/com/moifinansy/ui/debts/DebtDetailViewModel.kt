@@ -56,7 +56,10 @@ class DebtDetailViewModel @Inject constructor(
     private val debts: DebtRepository,
     private val accounts: AccountRepository,
     private val clock: Clock,
+    private val phoneContacts: com.moifinansy.data.contacts.PhoneContacts,
 ) : ViewModel() {
+    suspend fun inPhoneContacts(phone: String?): Boolean? = phoneContacts.exists(phone)
+
     private val debtId: Long = checkNotNull(savedStateHandle.get<Long>("id"))
 
     val state: StateFlow<DebtDetailState> = debts.observe(debtId)

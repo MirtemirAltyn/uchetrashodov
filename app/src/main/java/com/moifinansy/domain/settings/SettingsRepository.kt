@@ -29,6 +29,10 @@ interface SettingsRepository {
     /** «Начать с чистого листа»: сбрасывает все настройки, кроме темы. */
     suspend fun resetAll()
 
+    /** Код страны для номеров без «+» (напоминания в WhatsApp/SMS). */
+    val phoneCountryCode: Flow<String>
+    suspend fun setPhoneCountryCode(code: String)
+
     /** Новые долги по умолчанию влияют на баланс счетов. */
     val debtsAffectBalance: Flow<Boolean>
     suspend fun setDebtsAffectBalance(value: Boolean)

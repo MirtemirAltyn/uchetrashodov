@@ -57,6 +57,13 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val phoneCountryCode: Flow<String> =
+        dataStore.data.map { it[PHONE_COUNTRY] ?: com.moifinansy.domain.contacts.PhoneNumbers.DEFAULT_COUNTRY }.distinctUntilChanged()
+
+    override suspend fun setPhoneCountryCode(code: String) {
+        dataStore.edit { it[PHONE_COUNTRY] = code }
+    }
+
     override val debtsAffectBalance: Flow<Boolean> = dataStore.data.map { it[DEBTS_AFFECT] ?: true }.distinctUntilChanged()
 
     override suspend fun setDebtsAffectBalance(value: Boolean) {
@@ -137,6 +144,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val LOCK_AFTER = androidx.datastore.preferences.core.intPreferencesKey("lock_after_minutes")
         val DEBT_DAYS = androidx.datastore.preferences.core.intPreferencesKey("debt_reminder_days")
         val BLOCK_SCREENSHOTS = booleanPreferencesKey("block_screenshots")
+        val PHONE_COUNTRY = stringPreferencesKey("phone_country_code")
         val DEBTS_AFFECT = booleanPreferencesKey("debts_affect_balance")
         val NOTIFIED = androidx.datastore.preferences.core.stringSetPreferencesKey("notified_keys")
     }

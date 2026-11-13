@@ -68,6 +68,7 @@ fun DebtsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val q = state.query
     val context = LocalContext.current
+    val reminder = rememberReminder()
 
     LazyColumn(
         modifier = Modifier
@@ -131,7 +132,7 @@ fun DebtsScreen(
                                     true
                                 }
                                 SwipeToDismissBoxValue.EndToStart -> {
-                                    shareReminder(context, reminderText(context, card.debt, card.contactName))
+                                    reminder.open(context, card.debt, card.contactName, card.contactPhone)
                                     false
                                 }
                                 else -> false

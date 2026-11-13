@@ -119,6 +119,18 @@ fun SettingsScreen(
                 state.debtsAffectBalance,
                 viewModel::setDebtsAffectBalance,
             )
+            Label(stringResource(R.string.settings_phone_country))
+            Chips {
+                com.moifinansy.domain.contacts.PhoneNumbers.COUNTRIES.forEach { code ->
+                    FilterChip(state.phoneCountry == code, { viewModel.setPhoneCountry(code) }, label = { Text(code) })
+                }
+            }
+            Text(
+                stringResource(R.string.settings_phone_country_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = Spacing.screenHorizontal),
+            )
 
             Section(stringResource(R.string.settings_section_reminders))
             Label(stringResource(R.string.settings_debt_days))

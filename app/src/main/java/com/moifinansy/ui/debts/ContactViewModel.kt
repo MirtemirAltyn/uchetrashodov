@@ -30,7 +30,11 @@ class ContactViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val debts: DebtRepository,
     private val clock: Clock,
+    private val phoneContacts: com.moifinansy.data.contacts.PhoneContacts,
 ) : ViewModel() {
+    /** Есть ли номер в контактах телефона (null — не знаем: нет разрешения). */
+    suspend fun inPhoneContacts(phone: String?): Boolean? = phoneContacts.exists(phone)
+
     private val contactId: Long = checkNotNull(savedStateHandle.get<Long>("id"))
 
     val state: StateFlow<ContactState> = combine(

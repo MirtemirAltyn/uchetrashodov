@@ -282,6 +282,7 @@ class AppSmokeTest {
         click("Записать долг")
         waitForText("Новый долг")
         input("Имя", "Азамат Токтогулов")
+        input("Телефон", "0555 123 456")
         input("Сумма", "14000")
         shot("12_debt_edit")
         compose.onNodeWithText("Сохранить").performScrollTo().performClick()
@@ -291,6 +292,18 @@ class AppSmokeTest {
         click("Провести")
         waitForText("Возвращено " + MoneyFormat.formatNumber(400_000) + "\u00A0сом из " + MoneyFormat.formatNumber(1_400_000) + "\u00A0сом")
         shot("13_debt_detail")
+
+        // «Напомнить»: номер с кодом страны, SMS открывается на этот номер.
+        compose.onNode(hasContentDescription("Напомнить")).performClick()
+        waitForText("Напомнить о долге")
+        waitForText("+996555123456", substring = true)
+        shot("13a_remind")
+        click("SMS на этот номер")
+        compose.activityRule.scenario.onActivity {
+            val started = org.robolectric.Shadows.shadowOf(it).nextStartedActivity
+            org.junit.Assert.assertEquals("smsto:+996555123456", started.dataString)
+            org.junit.Assert.assertTrue(started.getStringExtra("sms_body")!!.startsWith("Азамат Токтогулов, привет!"))
+        }
 
         // Выключаем влияние на баланс и включаем обратно по тому же счёту.
         click("Влияет на баланс")

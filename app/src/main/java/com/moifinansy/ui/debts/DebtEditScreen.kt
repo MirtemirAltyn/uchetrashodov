@@ -4,7 +4,9 @@ import android.app.Activity
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.rounded.Contacts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -63,16 +65,11 @@ fun DebtEditScreen(onBack: () -> Unit, onSaved: (Long) -> Unit, viewModel: DebtE
     var pickStart by remember { mutableStateOf(false) }
     var pickDue by remember { mutableStateOf(false) }
 
-    // Выбор из телефонной книги без разрешения READ_CONTACTS: система даёт доступ к одной выбранной записи.
-    val phonebook = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val uri = result.data?.data
-        if (result.resultCode == Activity.RESULT_OK && uri != null) {
-            context.contentResolver.query(
-                uri,
-                arrayOf(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER),
-                null, null, null,
-            )?.use { c -> if (c.moveToFirst()) viewModel.picked(c.getString(0).orEmpty(), c.getString(1)) }
-        }
+    val pickFromPhonebook = rememberPhonebookPicker { name, phone -> viewModel.picked(name, phone) }
+    // Подсказки из контактов: разрешение спрашиваем один раз, когда человек начинает вводить имя.
+    var askedContacts by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val contactsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.refreshSuggestions()
     }
 
     Scaffold(
@@ -112,13 +109,43 @@ fun DebtEditScreen(onBack: () -> Unit, onSaved: (Long) -> Unit, viewModel: DebtE
             if (state.newContact) {
                 OutlinedTextField(
                     value = state.contactName,
-                    onValueChange = viewModel::setContactName,
+                    onValueChange = { text ->
+                        viewModel.setContactName(text)
+                        if (!askedContacts && text.isNotBlank() && !viewModel.canSuggest()) {
+                            askedContacts = true
+                            contactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    },
                     label = { Text(stringResource(R.string.debt_contact_name)) },
                     isError = state.contactError,
                     supportingText = if (state.contactError) ({ Text(stringResource(R.string.debt_contact_required)) }) else null,
+                    trailingIcon = {
+                        androidx.compose.material3.IconButton(onClick = pickFromPhonebook) {
+                            androidx.compose.material3.Icon(
+                                androidx.compose.material.icons.Icons.Rounded.Contacts,
+                                contentDescription = stringResource(R.string.debt_contact_pick),
+                            )
+                        }
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                state.suggestions.forEach { s ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.picked(s.name, s.phone) }
+                            .padding(vertical = Spacing.grid / 2),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.grid * 1.5f),
+                    ) {
+                        Avatar(s.name, size = 32.dp)
+                        Column {
+                            Text(s.name)
+                            Text(s.phone, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = state.contactPhone,
                     onValueChange = viewModel::setContactPhone,
@@ -130,11 +157,7 @@ fun DebtEditScreen(onBack: () -> Unit, onSaved: (Long) -> Unit, viewModel: DebtE
             } else if (state.contactError) {
                 Text(stringResource(R.string.debt_contact_required), color = MaterialTheme.colorScheme.error)
             }
-            TextButton(onClick = {
-                runCatching {
-                    phonebook.launch(android.content.Intent(android.content.Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI))
-                }
-            }) { Text(stringResource(R.string.debt_contact_pick)) }
+            TextButton(onClick = pickFromPhonebook) { Text(stringResource(R.string.debt_contact_pick)) }
 
             MoneyField(
                 value = state.amountText,

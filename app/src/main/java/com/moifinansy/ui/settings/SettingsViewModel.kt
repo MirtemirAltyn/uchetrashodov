@@ -30,6 +30,7 @@ data class SettingsState(
     val security: SecuritySettings = SecuritySettings(),
     val debtsAffectBalance: Boolean = true,
     val blockScreenshots: Boolean = false,
+    val phoneCountry: String = com.moifinansy.domain.contacts.PhoneNumbers.DEFAULT_COUNTRY,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -49,7 +50,9 @@ class SettingsViewModel @Inject constructor(
             b, base, security, debts, block ->
         b.copy(baseCurrency = base ?: Currencies.DEFAULT, security = security, debtsAffectBalance = debts, blockScreenshots = block)
     }.flatMapLatest { s ->
-        accounts.observeCurrenciesWithoutRate(s.baseCurrency).let { flow -> kotlinx.coroutines.flow.flow { flow.collect { emit(s.copy(missingRates = it)) } } }
+        combine(accounts.observeCurrenciesWithoutRate(s.baseCurrency), settings.phoneCountryCode) { missing, country ->
+            s.copy(missingRates = missing, phoneCountry = country)
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsState())
 
     private fun launch(block: suspend () -> Unit) = viewModelScope.launch { block() }
@@ -63,6 +66,7 @@ class SettingsViewModel @Inject constructor(
     fun setBiometric(value: Boolean) = launch { settings.setBiometric(value) }
     fun setLockAfter(minutes: Int) = launch { settings.setLockAfterMinutes(minutes) }
     fun disablePin() = launch { settings.setPin(null, null) }
+    fun setPhoneCountry(code: String) = launch { settings.setPhoneCountryCode(code) }
     fun setBlockScreenshots(value: Boolean) = launch { settings.setBlockScreenshots(value) }
 
     /** Курсы задаются к основной валюте — при её смене старые курсы теряют смысл. */
